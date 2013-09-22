@@ -1,0 +1,25 @@
+.mercury-primary-toolbar .mercury-inspector-button em,
+.mercury-expander-button[data-button="inspector"] em {
+  background-image: url(/assets/mercury/toolbar/primary/inspectorpanel.png);
+}
+.mercury-editable-toolbar .mercury-titleAndContent-button {
+  background: url(/assets/mercury/toolbar/editable/title_and_content.png) no-repeat 0 0;
+}
+.mercury-editable-toolbar .mercury-titleAndContent-button.active {
+  background-position: 0 -18px;
+}
+.control-group {
+    margin-bottom: 9px;
+}
+
+label.inline { display: inline-block; }
+
+.choose-thumb {
+	float: left;
+	margin: 0 10px 10px 0;
+}
+
+.small {
+	font-size: 10px;
+	letter-spacing: -1px;
+}

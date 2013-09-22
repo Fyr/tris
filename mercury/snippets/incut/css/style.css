@@ -1,0 +1,19 @@
+.incut-body {
+	margin-bottom: 1em;
+	color: #7b838d;
+	padding-bottom: 6px;
+	border-bottom: 1px solid #ffb300;
+}
+.incut-snippet .incut-header {
+	background: #ffb300;
+	height: 24px;
+	color: #000;
+}
+.incut-snippet .incut-header span {
+	position: relative;
+	top: 2px;
+}
+.incut-snippet img {
+	margin-left: 5px;
+	float: left;
+}
