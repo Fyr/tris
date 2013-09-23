@@ -1,6 +1,11 @@
 <?php
 class Request {
 
+	/**
+	 * @param string $param
+	 * @param $default
+	 * @return string $param or NULL
+	 */
 	public static function GET($param, $default = NULL) {
 		if (isset($_GET[$param])) {
 			return $_GET[$param];
