@@ -56,8 +56,6 @@ $images = $lessonModel->getImageList(array(), array('shop_thumbnail', 'large'));
 ?>
 			</select>
 			<br />
-			<label class="string optional control-label inline" for="image_height_perc" style="margin-left: 0">Название</label>
-    		<input type="text" class="string optional" id="custom-editable" name="editable" value="<?=$editable?>" style="width: 480px" />
         </div>
       </div>
     </fieldset>
