@@ -356,6 +356,11 @@ LIMIT ".LAST_VISITED, $userID);
 		return $aThumbs;
 	}
 	*/
+	/**
+	 * @param (array) $conditions Array
+	 * @param (array) $image_type Type of image (default = 'shop_thumbnail')
+	 * @return (array) images array
+	 */
 	public function getImageList($conditions = array(), $image_type = 'shop_thumbnail') {
 		// $aSizes = array();
 		if (!is_array($image_type)) {
