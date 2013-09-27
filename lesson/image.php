@@ -189,7 +189,7 @@ class Image
 	public function getColor($sHexColor)
 	{
 		$aColor = $this->getAColor($sHexColor);
-		return imagecolorallocate(&$this->rImage, $aColor[0], $aColor[1], $aColor[2]);
+		return imagecolorallocate($this->rImage, $aColor[0], $aColor[1], $aColor[2]);
 	}
 
 	/**
