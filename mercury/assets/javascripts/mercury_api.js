@@ -1,26 +1,65 @@
 function initMercuryAPI() {
 Mercury.Snippet.API = {
+	getJQContext: function (e) {
+		return $(e).closest('.mercury-options-panel');
+	},
 	sendRequest: function(e, snippet, action, data, successFn) {
+		Mercury.Snippet.API.beforeRequest(e);
 		$.ajax({
 			url: '/mercury/snippets/index.php?snippet=' + snippet + '&action=' + action + '&para_id=' + paraID,
 			data: data,
 			type: 'post',
 			dataType: 'json',
 			success: function(response) {
-				if (successFn) {
-					successFn($(e).closest('.mercury-options-panel'), response);
+				Mercury.Snippet.API.afterRequest(e);
+				if (Mercury.Snippet.API.checkResponse(response)) {
+					if (successFn) {
+						successFn($(e).closest('.mercury-options-panel'), response);
+					}
 				}
 			}
 		});
 	},
+	beforeRequest: function(e) {
+		var panel = $(e).closest('.mercury-options-panel');
+		$('.form-actions .actions', panel).hide();
+		$('.form-actions .loader', panel).show();
+	},
+	afterRequest: function(e) {
+		var panel = $(e).closest('.mercury-options-panel');
+		$('.form-actions .actions', panel).show();
+		$('.form-actions .loader', panel).hide();
+	},
+	checkResponse: function(response) {
+		if (response && response.status && response.status == 'ERROR') {
+			alert(response.errMsg);
+			return false;
+		}
+		return true;
+	},
 	selectThumb: function(e, img_src) {
 		var panel = $(e).closest('.mercury-options-panel');
+
+		// Select thumb
 		$('.choose-thumb', panel).removeClass('selected');
 		$(e).addClass('selected');
-		$('.form-actions .btn', panel).get(0).disabled = false;
-		$('.form-actions .btn', panel).removeClass('disabled');
+
+		Mercury.Snippet.API.enableActions(e, true);
+
+		// Remember ing_src option
 		$('#img_src', panel).val(img_src);
-		$('#img_id', panel).val(e.id.replace(/thumb_/, ''));
+	},
+	enableActions: function (e, lEnable) {
+		var panel = Mercury.Snippet.API.getJQContext(e);
+		lEnable = (typeof(lEnable) == 'undefined') ? true : lEnable;
+		$('.form-actions .btn', panel).each(function(){
+			this.disabled = !lEnable;
+			if (lEnable) {
+				$(this).removeClass('disabled');
+			} else {
+				$(this).addClass('disabled');
+			}
+		});
 	},
 	chooseThumb: function(e)  {
 		Mercury.Snippet.API.sendRequest(e, 'paraimage', 'getThumbs', null, function(panel, response) {
@@ -55,8 +94,13 @@ Mercury.Snippet.API = {
 			$('.uploadImages .upload-btn', panel).get(0).disabled = true;
 		}
 	},
-	enableDelete: function (e, lEnable) {
-
+	deleteImage: function (e) {
+		var panel = $(e).closest('.mercury-options-panel');
+		var id = $('.choose-thumb.selected', panel).attr('id').replace(/thumb_/, '');
+		Mercury.Snippet.API.sendRequest(e, 'paraimage', 'deleteImage', {id: id, img_src: $('#img_src', panel).val()}, function(panel, response){
+			$('.chooseThumb', panel).html(response.thumbsHTML);
+			Mercury.Snippet.API.enableActions(e, false);
+		});
 	},
 	uploadImage: function(e, selector, img_src) {
 		var panel = $(e).closest('.mercury-options-panel');
@@ -99,7 +143,7 @@ Mercury.Snippet.API = {
 						type: "POST",
 						data: formdata,
 						dataType: 'json',
-						processData: false,
+						processData: false, // !!!
 						contentType: false,
 						success: function (response) {
 							$('.uploadImages #form', panel).show();
@@ -110,12 +154,6 @@ Mercury.Snippet.API = {
 							$('.chooseThumb', panel).html(response.thumbsHTML);
 						}
 					});
-					/*
-					Mercury.Snippet.API.sendRequest(e, 'paraimage', 'upload', formdata, function(panel, response){
-						$('.uploadImages #form', panel).show();
-						$('.uploadImages .loader', panel).hide();
-					});
-					*/
 				}
 			} else {
 				alert('Не корректное изображение!');

@@ -99,7 +99,7 @@
 					if ($para['audio_file']) {
 ?>
 												<li>
-													<a href="javascript:void(0)" onclick="lesson.audioDelete(<?=$para['id']?>)"><i class="icon-volume-up"></i> Удалить аудио</a>
+													<a href="javascript:void(0)" onclick="lesson.audioDelete(<?=$para['audio_id']?>)"><i class="icon-volume-up"></i> Удалить аудио</a>
 												</li>
 <?
 					} else {
@@ -146,7 +146,7 @@
 <div class="sampleUploadAudio" style="display: none">
 	<form action="" method="post" enctype="multipart/form-data">
 		<span class="small">Загружать можно только файлы в формате WAV</span>
-		<div class="input_file_place">	
+		<div class="input_file_place">
 			<div class="input_file_fake">Загрузить файл</div>
 			<input type="file" name="audio" />
 		</div>

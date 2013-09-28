@@ -459,9 +459,7 @@ class LessonActions {
 	}
 
 	public function audioDelete($data) {
-		// data[id] = paragraph id
-		$this->mediaModel->delMediaItem($data['id'], 'audio');
-		return array('status' => 'OK');
+		return $this->mediaModel->delMediaItem($data['id']);
 	}
 
 	public function updateVisited($paraID) {

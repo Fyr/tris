@@ -1,4 +1,6 @@
 <?
+require_once('path.php');
+
 class LessonModel {
 
 	const TABLE_PREFIX = 'ls_';
@@ -46,6 +48,7 @@ class LessonModel {
 	}
 
 	public function findOne($conditions = array(), $order = '') {
+		fdebug($this->getSQL($conditions, $order)."\r\n\r\n", 'sql.log');
 		$_ret = $this->db->get_row($this->getSQL($conditions, $order), ARRAY_A);
 		return ($_ret) ? $_ret : array();
 	}
@@ -88,7 +91,7 @@ class LessonModel {
 	}
 
 	public function findAll($conditions = array(), $order = '') {
-		return $this->db->get_results($this->getSQL($conditions, $order), ARRAY_A);
+		return $this->query($this->getSQL($conditions, $order));
 	}
 
 	public function delete($id) {
@@ -102,6 +105,7 @@ class LessonModel {
 	}
 
 	public function query($sql) {
+		fdebug($sql."\r\n\r\n", 'sql.log');
 		return $this->db->get_results($sql, ARRAY_A);
 	}
 
@@ -159,7 +163,7 @@ WHERE s.paragraph_id = %d', $paraID),
 			// $conditions['p.favorite'] = ($filters['favorite']) ? 1 : 0;
 			// TODO: implement search by key
 		}
-		$sql = 'SELECT p.id, p.title, p.chapter_id, c.lesson_id, c.title as chapter_title, m.file AS audio_file, p.subheaders
+		$sql = 'SELECT p.id, p.title, p.chapter_id, c.lesson_id, c.title as chapter_title, m.id AS audio_id, m.file AS audio_file, p.subheaders
 			FROM '.$this->getTableName('paragraphs').' AS p
 			JOIN '.$this->getTableName('chapters').' AS c ON p.chapter_id = c.id
 			LEFT JOIN '.$this->getTableName('media').' AS m ON p.id = m.object_id AND m.media_type = "audio" '.
@@ -169,7 +173,7 @@ WHERE s.paragraph_id = %d', $paraID),
 	}
 
 	public function search($q, $lessonID) {
-		$sql = 'SELECT p.id, p.title, p.chapter_id, c.lesson_id, c.title as chapter_title, p.content_cached, m.file AS audio_file FROM '.$this->getTableName('paragraphs').' AS p
+		$sql = 'SELECT p.id, p.title, p.chapter_id, c.lesson_id, c.title as chapter_title, p.content_cached, m.id AS audio_id, m.file AS audio_file FROM '.$this->getTableName('paragraphs').' AS p
 			JOIN '.$this->getTableName('chapters').' AS c ON p.chapter_id = c.id
 			LEFT JOIN '.$this->getTableName('media').' AS m ON p.id = m.object_id AND m.media_type = "audio"
 			WHERE lesson_id = '.intval($lessonID).' AND (p.title LIKE "%'.$q.'%" OR p.content_cached LIKE "%'.$q.'%")';
@@ -192,6 +196,10 @@ WHERE s.paragraph_id = %d', $paraID),
     		return '/thumb.php?id='.$id.'&file='.$file.$params;
     	}
     	return '/lesson/files/'.$type.'/'.$page.'/'.$id.'/'.rawurlencode($file);
+    }
+
+    public function getMediaFile($type, $id, $file, $params = '') {
+    	return $this->getPath($type, $id).$file;
     }
 
     public function uploadMedia($inputName, $mediaType, $objectID) {
@@ -231,21 +239,64 @@ WHERE s.paragraph_id = %d', $paraID),
 		return $FName;
 	}
 
-	public function getMediaItem($object_id, $media_type = 'audio') {
-		return $this->findOne(array('media_type' => $media_type, 'object_id' => $object_id));
+	public function getMediaItem($media_type = '', $object_type = '', $object_id = 0) {
+		return $this->findOne(array('media_type' => $media_type, 'object_type' => $object_type, 'object_id' => $object_id));
 	}
 
-	public function delMediaItem($object_id, $media_type = 'audio') {
-		$media = $this->getMediaItem($object_id, $media_type);
-		unlink(AUDIO_DIR.$media['file']);
+	public function getMediaItemList($media_type = '', $object_type = '', $object_id = 0) {
+		$conditions = array();
+		if ($media_type) {
+			$conditions['media_type'] = $media_type;
+		}
+		if ($object_type) {
+			$conditions['object_type'] = $object_type;
+		}
+		if ($object_id) {
+			$conditions['object_id'] = $object_id;
+		}
+		$items = $this->findAll($conditions, 'media_type, id');
+		$aMediaList = array();
+		foreach($items as $item) {
+			$aMediaList[$item['media_type']][] = $item;
+		}
+		return $aMediaList;
+	}
 
+	public function delMediaItem($mediaID) {
+		$media = $this->getItem($mediaID);
+		if (!$media) {
+			return array('status' => 'ERROR', 'errMsg' => 'Неверный media ID');
+		}
+
+		$path = $this->getPath($media['media_type'], $mediaID);
+		if ($media['media_type'] == 'image') {
+			// Check if this image is already used for snippets
+			$snippetOptsModel = new LessonModel('snippet_options');
+			$img_src = $this->getMediaURL('image', $mediaID, $media['file']);
+			$snippet = $snippetOptsModel->findOne(array('option_key' => 'img_src', 'value' => $img_src));
+			if ($snippet) {
+				return array('status' => 'ERROR', 'errMsg' => 'Это изображение уже используется для просмотра уроков');
+			}
+
+			$files = getPathContent($path);
+			if (isset($files['files'])) {
+				foreach($files['files'] as $file) {
+					@unlink($path.$file);
+				}
+			}
+		} else {
+			// Any other object does not create other files
+			$file = $this->getMediaFile($media['media_type'], $mediaID, $media['file']);
+			@unlink($file);
+		}
+		rmdir($path);
 		$this->db->query(
-			$this->db->prepare('DELETE FROM '.$this->getTableName('media').' WHERE id = %d', $media['id'])
+			$this->db->prepare('DELETE FROM '.$this->getTableName('media').' WHERE id = %d', $mediaID)
 		);
+		return array('status' => 'OK');
 	}
 
 	public function getPosts($paraID) {
-		// $this->findAll(array('para_id' => $paraID), 'created');
 		$sql = $this->db->prepare('SELECT p.*, u.user_nicename AS username FROM '.$this->getTableName('posts').' AS p
 			JOIN '.$this->getWPTableName('users').' AS u ON u.ID = p.user_id
 			WHERE para_id = %d
@@ -357,7 +408,6 @@ LIMIT ".LAST_VISITED, $userID);
 	}
 	*/
 	public function getImageList($conditions = array(), $image_type = 'shop_thumbnail') {
-		// $aSizes = array();
 		if (!is_array($image_type)) {
 			$image_type = array($image_type);
 		}

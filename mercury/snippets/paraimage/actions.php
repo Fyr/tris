@@ -36,4 +36,14 @@ class ParaimageActions extends SnippetActions {
 		}
 		return array('status' => 'ERROR', 'errMsg' => 'Неверный формат изображения');
 	}
+
+	public function deleteImage($data) {
+		$mediaModel = new LessonModel('media');
+
+		$response = $mediaModel->delMediaItem($data['id']);
+		if ($response['status'] == 'OK') {
+			$response['thumbsHTML'] = $this->getThumbsContent($data);
+		}
+		return $response;
+	}
 }

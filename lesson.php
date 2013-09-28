@@ -107,7 +107,7 @@ if ($lEditMode) {
 }
 
 $audioModel = new LessonModel('media');
-$audio = $audioModel->getMediaItem($paraID, 'audio');
+$audio = $audioModel->getMediaItem('audio', 'Paragraph', $paraID);
 
 require_once(INCLUDE_DIR.'layout.php');
 
