@@ -10,7 +10,7 @@ if (!$user_ID || !$user_identity) {
 	$user_identity = 'Гость';
 }
 
-define('BASE_DIR', '/lesson/');
+define('BASE_DIR', './lesson/');
 define('INCLUDE_DIR', BASE_DIR.'includes/');
 define('PUBLIC_DIR', './lesson/assets/');
 define('UPLOAD_DIR', './lesson/files/');
@@ -26,8 +26,8 @@ require_once(INCLUDE_DIR.'lib_text.php');
 
 require_once(BASE_DIR.'actions.php');
 
-require_once('/mercury/snippets/snippet_actions.php');
-require_once('/mercury/snippets/init_snippets.php');
+require_once('./mercury/snippets/snippet_actions.php');
+require_once('./mercury/snippets/init_snippets.php');
 
 // $lEditMode = Request::GET('edit', false);// ($user_ID && $user_identity);
 // Init edit mode via session - this is the only secure way for AJAX-requests

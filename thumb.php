@@ -1,5 +1,5 @@
 <?
-define('BASE_DIR', '/lesson/');
+define('BASE_DIR', './lesson/');
 define('INCLUDE_DIR', BASE_DIR.'includes/');
 define('UPLOAD_DIR', './lesson/files/');
 
