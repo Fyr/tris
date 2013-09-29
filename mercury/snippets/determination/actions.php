@@ -1,0 +1,3 @@
+<?
+class DeterminationActions extends SnippetActions {
+}
