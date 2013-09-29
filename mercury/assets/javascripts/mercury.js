@@ -241,9 +241,9 @@ window.Mercury = {
     // **Note:** `:name` will be replaced with the snippet name in the urls (eg. /mercury/snippets/example/options.html)
     snippets: {
       method: 'POST',
-      optionsUrl: '/mercury/snippets/:name/options.php',
-      previewUrl: '/mercury/snippets/:name/preview.php'
-      },
+      optionsUrl: '/mercury/snippets/index.php?snippet=:name&action=options&paraID=' + paraID, // '/mercury/snippets/:name/options.php'
+      previewUrl: '/mercury/snippets/index.php?snippet=:name&action=preview&paraID=' + paraID
+    },
 
 
     // ## Image Uploading
