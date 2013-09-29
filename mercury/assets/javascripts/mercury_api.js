@@ -1,56 +1,58 @@
 function initMercuryAPI() {
-Mercury.Snippet.API = {
-	getJQContext: function (e) {
+
+SnippetAPI = function() {
+	var self = this;
+
+	this.getJQContext = function (e) {
 		return $(e).closest('.mercury-options-panel');
 	},
-	sendRequest: function(e, snippet, action, data, successFn) {
-		Mercury.Snippet.API.beforeRequest(e);
+	this.beforeRequest = function(panel) {
+		$('.form-actions .actions', panel).hide();
+		$('.form-actions .loader', panel).show();
+	},
+	this.afterRequest = function(panel) {
+		$('.form-actions .actions', panel).show();
+		$('.form-actions .loader', panel).hide();
+	},
+	this.sendRequest = function(e, snippet, action, data, successFn) {
+		var panel = self.getJQContext(e);
+		self.beforeRequest(panel);
 		$.ajax({
 			url: '/mercury/snippets/index.php?snippet=' + snippet + '&action=' + action + '&para_id=' + paraID,
 			data: data,
 			type: 'post',
 			dataType: 'json',
 			success: function(response) {
-				Mercury.Snippet.API.afterRequest(e);
-				if (Mercury.Snippet.API.checkResponse(response)) {
+				self.afterRequest(panel);
+				if (self.checkResponse(response)) {
 					if (successFn) {
-						successFn($(e).closest('.mercury-options-panel'), response);
+						successFn(panel, response);
 					}
 				}
 			}
 		});
 	},
-	beforeRequest: function(e) {
-		var panel = $(e).closest('.mercury-options-panel');
-		$('.form-actions .actions', panel).hide();
-		$('.form-actions .loader', panel).show();
-	},
-	afterRequest: function(e) {
-		var panel = $(e).closest('.mercury-options-panel');
-		$('.form-actions .actions', panel).show();
-		$('.form-actions .loader', panel).hide();
-	},
-	checkResponse: function(response) {
+
+	this.checkResponse = function(response) {
 		if (response && response.status && response.status == 'ERROR') {
 			alert(response.errMsg);
 			return false;
 		}
 		return true;
 	},
-	selectThumb: function(e, img_src) {
-		var panel = $(e).closest('.mercury-options-panel');
-
+	this.selectThumb = function(e, img_src) {
+		var panel = self.getJQContext();
 		// Select thumb
 		$('.choose-thumb', panel).removeClass('selected');
 		$(e).addClass('selected');
 
-		Mercury.Snippet.API.enableActions(e, true);
+		self.enableActions(e, true);
 
 		// Remember ing_src option
 		$('#img_src', panel).val(img_src);
 	},
-	enableActions: function (e, lEnable) {
-		var panel = Mercury.Snippet.API.getJQContext(e);
+	this.enableActions = function (e, lEnable) {
+		var panel = self.getJQContext(e);
 		lEnable = (typeof(lEnable) == 'undefined') ? true : lEnable;
 		$('.form-actions .btn', panel).each(function(){
 			this.disabled = !lEnable;
@@ -61,31 +63,8 @@ Mercury.Snippet.API = {
 			}
 		});
 	},
-	chooseThumb: function(e)  {
-		Mercury.Snippet.API.sendRequest(e, 'paraimage', 'getThumbs', null, function(panel, response) {
-			var panel = $(e).closest('.mercury-options-panel');
-			console.log(response);
-			html = 'Choose image<br>';
-			for(var i in response.images) {
-				html += '<img src="' + response.images[i].shop_thumbnail + '" alt="" />';
-			}
-			$('#chooseThumb', panel).html(html);
-			alert($('#chooseThumb', panel).html());
-			$('#chooseThumb', panel).dialog({
-				buttons: [
-					{ text: "Choose", click: function() { $('#chooseThumb', panel).dialog( "close" ); } },
-					{ text: "Cancel", click: function() { $('#chooseThumb', panel).dialog( "close" ); } }
-				],
-				draggable: false,
-				modal: true,
-				height: 400,
-				width: 600
-			});
-			alert('!');
-		});
-	},
-	enableUpload: function(e, lEnable) {
-		var panel = $(e).closest('.mercury-options-panel');
+	this.enableUpload = function(e, lEnable) {
+		var panel = self.getJQContext(e);
 		if (lEnable) {
 			$('.uploadImages .upload-btn', panel).removeClass('disabled');
 			$('.uploadImages .upload-btn', panel).get(0).disabled = false;
@@ -94,16 +73,16 @@ Mercury.Snippet.API = {
 			$('.uploadImages .upload-btn', panel).get(0).disabled = true;
 		}
 	},
-	deleteImage: function (e) {
-		var panel = $(e).closest('.mercury-options-panel');
+	this.deleteImage = function (e) {
+		var panel = self.getJQContext(e);
 		var id = $('.choose-thumb.selected', panel).attr('id').replace(/thumb_/, '');
-		Mercury.Snippet.API.sendRequest(e, 'paraimage', 'deleteImage', {id: id, img_src: $('#img_src', panel).val()}, function(panel, response){
+		self.sendRequest(e, 'paraimage', 'deleteImage', {id: id, img_src: $('#img_src', panel).val()}, function(panel, response){
 			$('.chooseThumb', panel).html(response.thumbsHTML);
-			Mercury.Snippet.API.enableActions(e, false);
+			self.enableActions(e, false);
 		});
 	},
-	uploadImage: function(e, selector, img_src) {
-		var panel = $(e).closest('.mercury-options-panel');
+	this.uploadImage = function(e, selector, img_src) {
+		var panel = self.getJQContext(e);
 
 		$('.uploadImages #form', panel).hide();
 		$('.uploadImages .loader', panel).show();
@@ -150,7 +129,7 @@ Mercury.Snippet.API = {
 							$('.uploadImages .loader', panel).hide();
 
 							$(input).val('');
-							Mercury.Snippet.API.enableUpload(e, false);
+							self.enableUpload(e, false);
 							$('.chooseThumb', panel).html(response.thumbsHTML);
 						}
 					});
@@ -162,4 +141,5 @@ Mercury.Snippet.API = {
 
 	}
 }
+Mercury.Snippet.API = new SnippetAPI();
 }
