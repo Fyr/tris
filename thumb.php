@@ -1,4 +1,6 @@
 <?
+require_once('wp-config.php');
+
 define('BASE_DIR', './lesson/');
 define('INCLUDE_DIR', BASE_DIR.'includes/');
 define('UPLOAD_DIR', './lesson/files/');
@@ -25,7 +27,12 @@ if (file_exists($fname)) {
 }
 
 $image = new Image();
-$image->load($path.$aFName['fname'].'.'.$aFName['orig_ext']);
+$orig_fname = $path.$aFName['fname'].'.'.$aFName['orig_ext'];
+if (!file_exists($orig_fname)) {
+	$media = $mediaModel->getItem($id);
+	$orig_fname = $path.$media['file'];
+}
+$image->load($orig_fname);
 if ($aSize) {
 	$image->resize($aSize['w'], $aSize['h']); // 'f6f6f6'
 }
