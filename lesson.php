@@ -59,18 +59,27 @@ $paraModel = new LessonModel('paragraphs');
 // Init current paragraph
 $paragraph = false;
 if (!$paraID) {
-	$paragraph = $paraModel->getFirstParagraph($lessonID);
-	$paraID = ($paragraph['id']) ? $paragraph['id'] : 0;
-	if (!$paraID) {
-		if ($lEditMode) {
-			// create sample chapter with paragraph
-			$lsActions->lessonInit();
-			$paragraph = $paraModel->getFirstParagraph($lessonID);
-			$paraID = ($paragraph['id']) ? $paragraph['id'] : 0;
-		} else {
-			// page does not exist - redirect user
-			header('Location:/');
-			exit;
+	if (!$lEditMode) {
+		$lastVisited = $paraModel->getLastVisited($user_ID, $lessonID);
+
+		if ($lastVisited) {
+			$paraID = $lastVisited[0]['para_id'];
+			$paragraph = $paraModel->getItem($paraID);
+		}
+	} else {
+		$paragraph = $paraModel->getFirstParagraph($lessonID);
+		$paraID = (isset($paragraph['id']) && $paragraph['id']) ? $paragraph['id'] : 0;
+		if (!$paraID) {
+			if ($lEditMode) {
+				// create sample chapter with paragraph
+				$lsActions->lessonInit();
+				$paragraph = $paraModel->getFirstParagraph($lessonID);
+				$paraID = ($paragraph['id']) ? $paragraph['id'] : 0;
+			} else {
+				// page does not exist - redirect user
+				header('Location:/');
+				exit;
+			}
 		}
 	}
 } else {

@@ -365,13 +365,17 @@ JOIN ".$this->getWPTableName('posts')." AS p2 ON pm.meta_value = p2.ID";
 		return array('Lesson' => array(), 'Thumb' => array());
 	}
 
-	public function getLastVisited($userID) {
+	public function getLastVisited($userID, $lessonID = 0) {
+		$conditions = array('v.user_id' => $userID);
+		if ($lessonID) {
+			$conditions['c.lesson_id'] = $lessonID;
+		}
 		$sql = $this->db->prepare("SELECT * FROM (
 SELECT v.para_id, p.title as para_title, p.chapter_id, c.title as chapter_title, c.lesson_id, v.last_visited
 FROM ".$this->getTableName('visited')." AS v
 JOIN ".$this->getTableName('paragraphs')." AS p ON p.id = v.para_id
 JOIN ".$this->getTableName('chapters')." AS c ON c.id = p.chapter_id
-WHERE v.user_id = %d
+".$this->getSQLWhere($conditions)."
 ORDER BY v.last_visited DESC, c.sort_order, p.sort_order
 ) AS t GROUP BY lesson_id ORDER BY last_visited DESC
 LIMIT ".LAST_VISITED, $userID);

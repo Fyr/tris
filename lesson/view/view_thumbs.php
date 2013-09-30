@@ -9,7 +9,7 @@
 			$_lessonID = $row['lesson_id'];
 			$thumb = $thumbInfo['Thumb'][$_lessonID];
 
-			$url = 'lesson.php?id='.$_lessonID.'&p='.$row['para_id'];
+			$url = 'lesson.php?id='.$_lessonID; // .'&p='.$row['para_id'];
 			$title = 'Перейти к '.$row['chapter_title'].': '.$row['para_title'];
 			$thumb_src = $thumb['thumb'];
 			$thumb_alt = $thumb['post_title'];
