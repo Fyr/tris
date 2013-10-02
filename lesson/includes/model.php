@@ -400,7 +400,8 @@ LIMIT ".LAST_VISITED, $userID);
 			$image_type = array($image_type);
 		}
 		$mediaModel = new LessonModel('media');
-		$aRowset = $mediaModel->findAll(array('media_type' => 'image'), 'id DESC');
+		$conditions = array_merge(array('media_type' => 'image'), $conditions);
+		$aRowset = $mediaModel->findAll($conditions, 'id DESC');
 		$aImages = array();
 		foreach($aRowset as $row) {
 			foreach($image_type as $type) {

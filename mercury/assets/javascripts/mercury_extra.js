@@ -19,8 +19,7 @@ function initMercurySave() {
 	Mercury.PageEditor.prototype.save = function() {
 		var data = this.serialize();
 		// var lightview = Mercury.lightview(null, {title: 'Saving', closeButton: true/*, content: '<div class="save-content" align="center" style="margin-top: 50px;">Wait, while your content is been saving...</div>'*/});
-		$('#saveMsg div').html('<img src="./lesson/img/ajax-loader2.gif" alt="" />');
-		$('#saveMsg div').html('<img src="./lesson/img/ajax-loader2.gif" alt="" />');
+		$('#saveMsg div').html('<img src="./lesson/assets/img/ajax-loader2.gif" alt="" />');
 		$('#saveMsg').dialog({
 			dialogClass: 'saveMsg',
 			closeOnEscape: false,

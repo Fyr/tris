@@ -16,7 +16,7 @@
 	<title>Территория Русь</title>
     <link rel="icon" href="<?=PUBLIC_DIR?>img/favicon.ico">
 <?
-	foreach (array('bootstrap.min', 'smoothness/jquery-ui-1.10.3.custom.min', 'styles', 'extra', 'slider') as $css) {
+	foreach (array('bootstrap.min', 'smoothness/jquery-ui-1.10.3.custom.min', 'styles', 'extra', 'slider', 'jquery.fancybox') as $css) {
 ?>
 	<link rel="stylesheet" href="<?=PUBLIC_DIR?>css/<?=$css?>.css" type="text/css" media="screen, projection">
 <?
@@ -78,6 +78,8 @@ $(document).ready(function() {
 ?>
 $(document).ready(function() {
 	initQuiz();
+	initGallery();
+	initSnippetSlider();
 });
 <?
 	}
@@ -350,6 +352,7 @@ jQuery(window).on('mercury:ready', function() {
 		'scripts',
 		'jquery.main',
 		'jquery.form.min',
+		'jquery.fancybox',
 		'lesson'
 	);
 	foreach ($scripts as $js) {
@@ -358,6 +361,7 @@ jQuery(window).on('mercury:ready', function() {
 <?
 	}
 ?>
+	<script src="/mercury/snippets/slider/assets/js/slidersnippet.js" type="text/javascript"></script>
 	<form id="extra-nav" action="" method="get" style="display: none;">
 		<input type="hidden" name="id" value="<?=$lessonID?>" />
 		<input id="p" type="hidden" name="p" value="<?=$paraID?>" />

@@ -256,3 +256,8 @@ a.btn-mini {
 a.btn-primary {
 	color: #fff;
 }
+.clear {
+	clear: both;
+	height: 0px;
+	content: '';
+}

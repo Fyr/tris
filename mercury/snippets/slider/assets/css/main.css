@@ -1,0 +1,64 @@
+.mercury_slider {
+	position: relative;
+}
+
+.mercury_slider .controls {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 65;
+}
+
+.mercury_slider .controls .button {
+	position: absolute;
+	top: 0;
+	height: 100%;
+	z-index: 65;
+	width: 26px;
+	opacity: 0.4;
+	background: #ddd;
+}
+
+.mercury_slider .controls .button:hover {
+	cursor: pointer;
+	opacity: 0.65 !important;
+}
+
+.mercury_slider .controls .button.left {
+	left: 0;
+	background: url(../img/leftarrow.png) right center no-repeat transparent;
+}
+.mercury_slider .controls .button.right {
+	right: 0;
+	background: url(../img/rightarrow.png) left center no-repeat transparent;
+}
+.mercury_slider .scene {
+	position: absolute;
+	overflow: hidden;
+	top: 0;
+	height: 100%;
+	width: 100%;
+	z-index: 60;
+}
+
+.mercury_slider .scene .item {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	z-index: 1;
+	opacity: 0;
+	top: 0;
+	left: 0;
+}
+
+.mercury_slider .mainrow {
+	float: left;
+	width: 100%;
+}
+
+.slider-wrapper .notify {
+	font-size: 11px;
+	text-align: left;
+}

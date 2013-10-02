@@ -41,7 +41,7 @@ SnippetAPI = function() {
 		return true;
 	},
 	this.selectThumb = function(e, img_src) {
-		var panel = self.getJQContext();
+		var panel = self.getJQContext(e);
 		// Select thumb
 		$('.choose-thumb', panel).removeClass('selected');
 		$(e).addClass('selected');
@@ -50,6 +50,24 @@ SnippetAPI = function() {
 
 		// Remember ing_src option
 		$('#img_src', panel).val(img_src);
+	},
+	this.selectThumbList = function(e, img_src) {
+		var panel = self.getJQContext(e);
+		// Select thumb
+		if ($(e).hasClass('selected')) {
+			$(e, panel).removeClass('selected');
+		} else {
+			$(e).addClass('selected');
+		}
+
+		self.enableActions(e, $('.choose-thumb.selected', panel).size());
+
+		// Remember img_src option
+		var ids = new Array();
+		$('.choose-thumb.selected', panel).each(function(){
+			ids.push(this.id.replace(/thumb_/, ''));
+		});
+		$('#img_ids', panel).val(ids.join());
 	},
 	this.enableActions = function (e, lEnable) {
 		var panel = self.getJQContext(e);

@@ -36,7 +36,7 @@
 		array('title' => 'Справа, обтекание текста слева/снизу', 'icon' => 'icon-align-left', 'value' => 'float_right')
 	);
 	foreach($aOptions as $row) {
-		$checked = ($row['value'] == $curr_checked) ? 'selected="selected"' : '';
+		$checked = ($row['value'] == $curr_checked) ? ' selected="selected"' : '';
 ?>
 				<option value="<?=$row['value']?>"<?=$checked?>><?=$row['title']?></option>
 <?

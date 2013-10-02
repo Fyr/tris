@@ -298,6 +298,8 @@ var lesson = {
 				initContentHeight();
 				initNavi(paraID);
 				initQuiz();
+				initGallery();
+				initSnippetSlider();
 				initTopIcons(parseInt(response.favorite));
 			}, 'post');
 		}
@@ -402,4 +404,18 @@ function initQuiz() {
 		}, 'post');
 	});
 
+}
+
+function initGallery() {
+	$('.gallery-snippet').each(function(){
+		var snippet = $(this);
+		$('.gallery-thumb', snippet).attr('rel', 'photoalbum_' + snippet.data('snippet').replace(/snippet_/, ''));
+	});
+	$('.gallery-thumb').fancybox({
+		padding: 5
+	});
+}
+
+function initSnippetSlider() {
+	var sliders = new MercurySliders();
 }
