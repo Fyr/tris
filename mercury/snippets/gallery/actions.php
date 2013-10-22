@@ -36,7 +36,7 @@ class GalleryActions extends SnippetActions {
 		$input = 'image';
 		$mediaModel = new LessonModel('media');
 		if (isset($_FILES[$input]['type']) && strpos($_FILES[$input]['type'], 'image') !== false) {
-			$response = $mediaModel->uploadMedia($input, 'image', $data['lesson_id']);
+			$response = $mediaModel->uploadMedia($input, 'image', 'Lesson', $data['lesson_id']);
 			if ($response['status'] == 'OK') {
 				$response['thumbsHTML'] = $this->getThumbsContent($data);
 			}

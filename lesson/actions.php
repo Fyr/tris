@@ -23,7 +23,7 @@ class LessonActions {
 		$this->noteModel = new LessonModel('notes');
 		$this->mediaModel = new LessonModel('media');
 		$this->visitedModel = new LessonModel('visited');
-		$this->lessonModel = new LessonModel();
+		$this->lessonModel = new LessonModel('lessons');
 	}
 
 	protected function set($key, $value) {
@@ -42,11 +42,13 @@ class LessonActions {
 		$this->chapterUpdate(array('title' => 'Глава 1'));
 	}
 
-	public function lessonAdd($data) {
+	public function lessonUpdate($data) {
 		$oldLessonID = $this->lessonID;
 		$this->lessonID = $data['id'];
-		$this->lessonInit();
-
+		$this->lessonModel->save(array('id' => $this->lessonID, 'title' => $data['title']));
+		if (!$this->lessonID) {
+			$this->lessonInit();
+		}
 		$response = array('status' => 'OK', 'thumbHTML' => $this->getThumbContent(true));
 		$this->lessonID = $oldLessonID;
 		return $response;
@@ -473,15 +475,15 @@ class LessonActions {
 	}
 
 	public function getThumbInfo($lEditMode = false) {
-		$lastVisited = $this->visitedModel->getLastVisited($this->userID);
-		$conditions = ($lEditMode) ? array() : array('(SELECT id FROM ls_chapters WHERE lesson_id = p.ID ORDER BY sort_order LIMIT 1)');
-		$aCourses = $this->lessonModel->getCoursesList($conditions);
-		return array('LastVisited' => $lastVisited, 'Course' => $aCourses['Course'], 'Thumb' => $aCourses['Thumb']);
+		$lastVisited = $this->visitedModel->getLastVisited($this->userID, null, $lEditMode);
+		$aThumbs = $this->mediaModel->getThumbsList();
+		return array('LastVisited' => $lastVisited, 'Thumb' => $aThumbs);
 	}
 
 	public function getThumbContent($lEditMode = false) {
 		$thumbInfo = $this->getThumbInfo($lEditMode);
 		$this->set('thumbInfo', $thumbInfo);
+		$this->set('lEditMode', $lEditMode);
 		return $this->render('view_thumbs');
 	}
 
@@ -555,20 +557,37 @@ class LessonActions {
 		return array('status' => 'ERROR', 'errMsg' => 'Некорректный ID quiz-сниппета:'.print_r($conditions, true));
 	}
 
-	public function uploadImage($data) {
-		fdebug($_FILES);
-		/*
-		if (isset($_FILES['type']) && !in_array($_FILES['type'], array('audio/wav'))) {
-			return array('status' => 'ERROR', 'errMsg' => 'Неверный формат аудио-файла');
+	public function lessonImageUpload($data) {
+		if (isset($_FILES['type']) && !in_array($_FILES['type'], array('image/jpeg', 'image/jpg', 'image/png', 'image/gif'))) {
+			return array('status' => 'ERROR', 'errMsg' => 'Неверный формат файла');
 		}
 
-		if ($file = $this->mediaModel->uploadFile('image', UPLOAD_DIR, 'image')) {
-			// $this->mediaModel->save(array('media_type' => 'audio', 'object_id' => $data['id'], 'file' => $file));
-			return array('status' => 'OK', 'file' => UPLOAD_DIR.$file);
+		$response = $this->mediaModel->uploadMedia('media', 'image', 'LessonThumb', $data['id']);
+		if ($response['status'] == 'OK') {
+			$response['thumbHTML'] = $this->getThumbContent(true);
+			return $response;
 		}
-		*/
-		// return array('status' => 'ERROR', 'errMsg' => 'Ошибка загрузки аудио-файла');
-		return array('status' => 'OK');
+
+		return array('status' => 'ERROR', 'errMsg' => 'Ошибка загрузки файла');
+	}
+
+	public function lessonDelete($data) {
+		$aMedia = $this->mediaModel->getMediaItemList(null, array('Lesson', 'LessonThumb'), $data['id']);
+		if (count($aMedia)) {
+			foreach($aMedia as $mediaType) {
+				foreach($mediaType as $media) {
+					$response = $this->mediaModel->delMediaItem($media['id']);
+					if ($response['status'] == 'ERROR') {
+						return $response;
+					}
+				}
+			}
+		}
+		$chapters = $this->chapterModel->findAll(array('lesson_id' => $data['id']));
+		foreach($chapters as $row) {
+			$this->chapterDelete(array('id' => $row['id']));
+		}
+		return array('status' => 'OK', 'thumbHTML' => $this->getThumbContent(true));
 	}
 
 }

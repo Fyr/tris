@@ -1,5 +1,5 @@
 <?
-class LessonDBAdapter {
+class DBAdapter {
 
 	private static $instance;
 	private $db;

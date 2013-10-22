@@ -1,61 +1,44 @@
 <?
 	if ($thumbInfo['LastVisited']) {
 ?>
-	<b>Последние просмотренные уроки</b>
-	<table>
+	<!--b>Последние просмотренные уроки</b-->
+	<table width="100%">
 
 <?
 		foreach($thumbInfo['LastVisited'] as $row) {
-			$_lessonID = $row['lesson_id'];
-			$thumb = $thumbInfo['Thumb'][$_lessonID];
+			$_lessonID = $row['id'];
+			$thumb = (isset($thumbInfo['Thumb'][$_lessonID])) ? $thumbInfo['Thumb'][$_lessonID] : false;
 
 			$url = 'lesson.php?id='.$_lessonID; // .'&p='.$row['para_id'];
-			$title = 'Перейти к '.$row['chapter_title'].': '.$row['para_title'];
-			$thumb_src = $thumb['thumb'];
-			$thumb_alt = $thumb['post_title'];
+			$title = ($row['chapter_title'] && $row['para_title']) ? 'Перейти к '.$row['chapter_title'].': '.$row['para_title'] : 'Перейти к '.$row['title'];
 			$last_visited = $row['last_visited'];
-			$link_text = $thumb['post_title'];
+			$link_text = $row['title'];
 			include('view_thumbitem.php');
 		}
 	}
 ?>
 	</table>
-	<div>
-		<b>Все курсы</b>
-		<div class="accordion">
 <?
-	foreach($thumbInfo['Course'] as $courseID => $lessons) {
+	if ($lEditMode) {
 ?>
-			<h4><?=$lessons[0]['course_name']?></h4>
-			<div>
-				<table>
-<?
-		foreach($lessons as $lesson) {
-			$_lessonID = $lesson['lesson_id'];
-
-
-			$url = 'lesson.php?id='.$_lessonID;
-			$title = 'Перейти к '.$lesson['course_title'].': '.$lesson['lesson_title'];
-			$last_visited = ''; // $row['last_visited'];
-			$link_text = $lesson['lesson_title'];
-
-			$thumb_src = PUBLIC_DIR.'img/no_image.png';
-			$thumb_alt = $lesson['lesson_title'];
-			if (isset($thumbInfo['Thumb'][$lesson['lesson_id']])) {
-				$thumb = $thumbInfo['Thumb'][$lesson['lesson_id']];
-				$thumb_src = $thumb['thumb'];
-				$thumb_alt = $thumb['post_title'];
-			}
-			$addLesson = !$lesson['chapter_id'];
-			include('view_thumbitem.php');
-		}
-?>
-				</table>
+	<div align="center" style="margin-top: 10px; margin-bottom: 30px">
+		<a class="btn btn-mini btn-primary" href="javascript:void(0)" onclick="lesson.lessonUpdate()"><i class="icon icon-plus"></i> Добавить урок</a>
+	</div>
+	<div class="sampleUploadLessonImage" style="display: none">
+		<form action="" method="post" enctype="multipart/form-data">
+			<span class="small">Загружать можно только файлы в формате JPG, PNG, GIF</span>
+			<div class="input_file_place">
+				<div class="input_file_fake">Загрузить файл</div>
+				<input type="file" name="media" />
 			</div>
+			<input type="hidden" name="id" value="" />
+			<div align="right">
+				<button type="submit" class="btn btn-primary btn-mini upload-btn">Загрузить</button>
+				<button type="button" class="btn btn-mini" data-btn="cancel">Отмена</button>
+			</div>
+		</form>
+	</div>
+
 <?
 	}
 ?>
-
-
-		</div>
-	</div>

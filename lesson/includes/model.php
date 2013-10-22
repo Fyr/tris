@@ -1,117 +1,8 @@
 <?
 require_once('path.php');
+require_once('db_model.php');
 
-class LessonModel {
-
-	const TABLE_PREFIX = 'ls_';
-	const WP_TABLE_PREFIX = 'wp_';
-
-	protected $db;
-	protected $useTable;
-
-	public function __construct($tableName = '') {
-		$this->db = LessonDBAdapter::getInstance()->getDBAdapter();
-		if ($tableName) {
-			$this->setTableName($tableName);
-		}
-	}
-
-	public function setTableName($tableName) {
-		return $this->useTable = self::TABLE_PREFIX.$tableName;
-	}
-
-	public function getTableName($tableName = '') {
-		if ($tableName) {
-			return self::TABLE_PREFIX.$tableName;
-		}
-		return $this->useTable;
-	}
-
-	public function getWPTableName($tableName) {
-		return self::WP_TABLE_PREFIX.$tableName;
-	}
-
-	public function save($data) {
-		$id = false;
-		if (isset($data['id']) && intval($data['id'])) {
-			$this->db->update($this->getTableName(), $data, array('id' => $data['id']));
-			$id = $data['id'];
-		} else {
-			$this->db->insert($this->getTableName(), $data);
-			$id = $this->db->insert_id;
-		}
-		return $id;
-	}
-
-	public function getItem($id) {
-		return $this->findOne(array('id' => $id));
-	}
-
-	public function findOne($conditions = array(), $order = '') {
-		if (defined('DEBUG_SQL')) {
-			fdebug($this->getSQL($conditions, $order)."\r\n\r\n", 'sql.log');
-		}
-		$_ret = $this->db->get_row($this->getSQL($conditions, $order), ARRAY_A);
-		return ($_ret) ? $_ret : array();
-	}
-
-	protected function getSQLWhere($conditions = array()) {
-		$sql = '';
-		if ($conditions) {
-			$sql.= ' WHERE ';
-			$where = array();
-			foreach ($conditions as $key => $val) {
-
-				if (is_numeric($key)) {
-					$where[] = $val;
-				} else {
-
-					if (is_array($val)) {
-						$val = ' IN ('.implode(',', $val).')';
-					} else {
-						$val = ' = '.((is_numeric($val)) ? intval($val) : '"'.$val.'"');
-					}
-					$where[] = $key.$val;
-				}
-			}
-			$sql.= implode(' AND ', $where);
-		}
-		return $sql;
-	}
-
-	protected function getSQL($conditions = array(), $order = '') {
-		$sql = 'SELECT * FROM '.$this->getTableName();
-		$sql.= $this->getSQLWhere($conditions);
-		if ($order) {
-			if (is_array($order)) {
-				$sql.= ' ORDER BY '.implode(',', $order);
-			} else {
-				$sql.= ' ORDER BY '.$order;
-			}
-		}
-		return $sql;
-	}
-
-	public function findAll($conditions = array(), $order = '') {
-		return $this->query($this->getSQL($conditions, $order));
-	}
-
-	public function delete($id) {
-		$this->db->query(
-			$this->db->prepare('DELETE FROM '.$this->getTableName().' WHERE id = %d', $id)
-		);
-	}
-
-	public function deleteAll($conditions) {
-		$this->db->delete($this->useTable, $conditions);
-	}
-
-	public function query($sql) {
-		if (defined('DEBUG_SQL')) {
-			fdebug($sql."\r\n\r\n", 'sql.log');
-		}
-		return $this->db->get_results($sql, ARRAY_A);
-	}
+class LessonModel extends DBmodel {
 
 	public function deleteSnippetOptions($paraID) {
 		$this->db->query(
@@ -206,8 +97,8 @@ WHERE s.paragraph_id = %d', $paraID),
     	return $this->getPath($type, $id).$file;
     }
 
-    public function uploadMedia($inputName, $mediaType, $objectID) {
-		$id = $this->save(array('media_type' => $mediaType, 'object_id' => $objectID, 'file' => ''));
+    public function uploadMedia($inputName, $mediaType, $objectType = 'Lesson', $objectID) {
+		$id = $this->save(array('media_type' => $mediaType, 'object_type' =>$objectType, 'object_id' => $objectID, 'file' => ''));
 		$path = $this->getPath($mediaType, $id);
 		if (!file_exists($path)) {
 			if (!file_exists($this->getPagePath($mediaType, $id))) {
@@ -216,14 +107,14 @@ WHERE s.paragraph_id = %d', $paraID),
 			mkdir($path, 0755);
 		}
 
-    	if ($fileName = $this->uploadFile($inputName, $path, $mediaType)) {
+		if ($fileName = $this->uploadFile($inputName, $path, $mediaType)) {
 			$this->save(array('id' => $id, 'file' => $fileName));
 			return array('status' => 'OK', 'file' => $this->getMediaURL($mediaType, $id, $fileName));
 		} else {
 			$this->delete($id); // delete record for non-uploaded file
 		}
 		return array('status' => 'ERROR', 'errMsg' => 'Невозможно загрузить файл');
-    }
+	}
 
 	public function uploadFile($inputName, $uploadDir, $newFName = '', $newFExt = '') {
 		$path = pathinfo($_FILES[$inputName]['name']);
@@ -243,8 +134,9 @@ WHERE s.paragraph_id = %d', $paraID),
 		return $FName;
 	}
 
-	public function getMediaItem($media_type = '', $object_type = '', $object_id = 0) {
-		return $this->findOne(array('media_type' => $media_type, 'object_type' => $object_type, 'object_id' => $object_id));
+	public function getMediaItem($media_type = '', $object_type = '', $object_id = 0, $params = '') {
+		$media = $this->findOne(array('media_type' => $media_type, 'object_type' => $object_type, 'object_id' => $object_id));
+		return ($media) ? $this->getMediaURL($media_type, $media['id'], $media['file'], $params) : '';
 	}
 
 	public function getMediaItemList($media_type = '', $object_type = '', $object_id = 0) {
@@ -321,65 +213,39 @@ WHERE s.paragraph_id = %d', $paraID),
 	}
 
 	public function getThumbsList($conditions = array()) {
-		$sql = "SELECT p.*, mpm.* FROM ".$this->getWPTableName('postmeta')." AS pm
-JOIN ".$this->getWPTableName('posts')." AS p ON p.ID = pm.post_id
-JOIN ".$this->getWPTableName('postmeta')." AS mpm ON mpm.`post_id` = pm.meta_value AND mpm.meta_key = '_wp_attachment_metadata'";
-		$where = array('p.post_type' => 'lesson', 'p.post_status' => 'publish', 'pm.meta_key' => '_thumbnail_id');
-		$sql.= $this->getSQLWhere(array_merge($where, $conditions));
-		$aRowset = $this->db->get_results($sql, ARRAY_A);
+		$aRowset = $this->findAll(array_merge(array('object_type' => 'LessonThumb'), $conditions));
 		$aThumbs = array();
 		foreach($aRowset as $row) {
-			$a = unserialize($row['meta_value']);
-			list($dir, $subdir) = explode('/', $a['file']);
-			$aThumbs[$row['ID']] = array('post_id' => $row['ID'], 'post_title' => $row['post_title'], 'thumb' => UPLOADS_DIR.$dir.'/'.$subdir.'/'.$a['sizes']['shop_thumbnail']['file']);
+			$aThumbs[$row['object_id']] = $this->getMediaURL('image', $row['id'], $row['file'], '&w=90&h=90');
 		}
 		return $aThumbs;
 	}
 
-	public function getCoursesList($conditions = array()) {
-		$sql = "SELECT p.ID AS lesson_id, p.post_title AS lesson_title, p2.ID as course_id, p2.post_title AS course_name,
-			(SELECT id FROM ".$this->getTableName('chapters')." WHERE lesson_id = p.ID ORDER BY sort_order LIMIT 1) AS chapter_id
-FROM ".$this->getWPTableName('posts')." AS p
-JOIN ".$this->getWPTableName('postmeta')." AS pm ON pm.post_id = p.ID AND pm.meta_key = '_lesson_course'
-JOIN ".$this->getWPTableName('posts')." AS p2 ON pm.meta_value = p2.ID";
-		$where = array('p.post_type' => 'lesson');
-		$sql.= $this->getSQLWhere(array_merge($where, $conditions));
-		$sql.= ' ORDER BY p2.ID';
-		$aRowset = $this->db->get_results($sql, ARRAY_A);
-		$aCourses = array();
-		$aLessonID = array();
-		foreach($aRowset as $row) {
-			$aCourses[$row['course_id']][] = $row;
-			$aLessonID[] = $row['lesson_id'];
-		}
-		$aThumbs = $this->getThumbsList(array('pm.post_id' => $aLessonID));
-		return array('Course' => $aCourses, 'Thumb' => $aThumbs);
-	}
-
 	public function getLessonInfo($lessonID) {
-		$res = $this->getCoursesList(array('p.ID' => $lessonID));
-		if (isset($res['Course']) && $res['Course']) {
-			list($lesson) = array_values($res['Course']);
-			return array('Lesson' => $lesson[0], 'Thumb' => $res['Thumb'][$lessonID]);
-		}
-		return array('Lesson' => array(), 'Thumb' => array());
+		$mediaModel = new LessonModel('media');
+		return array('Lesson' => $this->getItem($lessonID), 'Thumb' => $mediaModel->getMediaItem('image', 'LessonThumb', $lessonID, '&w=150&h=150'));
 	}
 
-	public function getLastVisited($userID, $lessonID = 0) {
+	public function getLastVisited($userID, $lessonID = 0, $lEditMode = false) {
 		$conditions = array('v.user_id' => $userID);
 		if ($lessonID) {
 			$conditions['c.lesson_id'] = $lessonID;
 		}
-		$sql = $this->db->prepare("SELECT * FROM (
+		$sql = "SELECT * FROM ".$this->getTableName('lessons')." AS l
+LEFT JOIN (SELECT * FROM (
 SELECT v.para_id, p.title as para_title, p.chapter_id, c.title as chapter_title, c.lesson_id, v.last_visited
 FROM ".$this->getTableName('visited')." AS v
 JOIN ".$this->getTableName('paragraphs')." AS p ON p.id = v.para_id
 JOIN ".$this->getTableName('chapters')." AS c ON c.id = p.chapter_id
 ".$this->getSQLWhere($conditions)."
 ORDER BY v.last_visited DESC, c.sort_order, p.sort_order
-) AS t GROUP BY lesson_id ORDER BY last_visited DESC
-LIMIT ".LAST_VISITED, $userID);
-		$aRowset = $this->db->get_results($sql, ARRAY_A);
+) AS t GROUP BY lesson_id) AS t2 ON t2.lesson_id = l.id";
+		if ($lEditMode) {
+			$sql.= " ORDER BY id";
+		} else {
+			$sql.= " ORDER BY last_visited DESC";
+		}
+		$aRowset = $this->query($sql, ARRAY_A);
 		return $aRowset;
 	}
 

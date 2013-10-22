@@ -168,10 +168,6 @@ select, textarea, input[type="text"], input[type="password"], input[type="dateti
 .thumbs-panel td img {
 	margin: 0 5px 5px 0;
 }
-.thumbs-panel .lesson-title {
-	padding-bottom: 20px;
-}
-
 .thumbs-panel .thumb {
 	float: left;
 	margin: 0 8px 8px 0;

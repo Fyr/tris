@@ -1,4 +1,6 @@
 <?
+// define('DEBUG_SQL', true);
+
 if (!session_id()) {
     session_start();
 }
@@ -20,6 +22,7 @@ define('UPLOADS_DIR', '/wp-content/uploads/');
 
 require_once(INCLUDE_DIR.'request.php');
 require_once(INCLUDE_DIR.'db_adapter.php');
+require_once(INCLUDE_DIR.'db_model.php');
 require_once(INCLUDE_DIR.'model.php');
 require_once(INCLUDE_DIR.'view.php');
 require_once(INCLUDE_DIR.'lib_text.php');
@@ -61,18 +64,17 @@ $paragraph = false;
 if (!$paraID) {
 	if (!$lEditMode) {
 		$lastVisited = $paraModel->getLastVisited($user_ID, $lessonID);
-
-		if ($lastVisited) {
+		if ($lastVisited && isset($lastVisited[0]['para_id']) && $lastVisited[0]['para_id']) {
 			$paraID = $lastVisited[0]['para_id'];
-			$paragraph = $paraModel->getItem($paraID);
 		}
-	} else {
+	}
+	if (!$paraID) {
 		$paragraph = $paraModel->getFirstParagraph($lessonID);
 		$paraID = (isset($paragraph['id']) && $paragraph['id']) ? $paragraph['id'] : 0;
 		if (!$paraID) {
 			if ($lEditMode) {
 				// create sample chapter with paragraph
-				$lsActions->lessonInit();
+				$lsActions->lessonUpdate(array('id' => false, 'title' => 'Урок N 1'));
 				$paragraph = $paraModel->getFirstParagraph($lessonID);
 				$paraID = ($paragraph['id']) ? $paragraph['id'] : 0;
 			} else {
@@ -82,9 +84,8 @@ if (!$paraID) {
 			}
 		}
 	}
-} else {
-	$paragraph = $paraModel->getItem($paraID);
 }
+$paragraph = $paraModel->getItem($paraID);
 
 $aParaInfo = $paraModel->getParagraphList(array('lesson_id' => $lessonID)); // for navigation btw paragraphs (next, prev, slider)
 

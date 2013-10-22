@@ -66,12 +66,49 @@ var lesson = {
 		return true;
 	},
 
-	lessonAdd: function(lesson_id) {
-		lesson.sendRequest('lessonAdd', {'id': lesson_id}, function(response){
-			var activeOption = $(".thumbs-panel .accordion").accordion('option', 'active');
-			$('.thumbs-panel .tab-holder').html(response.thumbHTML);
-			initThumbAccordion(activeOption);
-		}, 'post');
+	lessonUpdate: function(lesson_id) {
+		if (!lesson.process) {
+			var title = prompt('Введите название урока', $('#lesson_' + lesson_id).html());
+			if (title) {
+				lesson.sendRequest('lessonUpdate', {'id': lesson_id, 'title': title}, function(response){
+					// var activeOption = $(".thumbs-panel .accordion").accordion('option', 'active');
+					$('.thumbs-panel .tab-holder').html(response.thumbHTML);
+					// initThumbAccordion(activeOption);
+				}, 'post');
+			}
+		}
+	},
+
+	lessonDelete: function(id) {
+		if (!lesson.process && confirm('Вы действительно хотите удалить урок "' + $('#lesson_' + id).html() + '"?')) {
+			lesson.sendRequest('lessonDelete', {'id': id}, function(response){
+				$('.thumbs-panel .tab-holder').html(response.thumbHTML);
+			}, 'post');
+		}
+	},
+
+	lessonImageUpload: function(id) {
+		if (!lesson.process) {
+			var form = $('.sampleUploadLessonImage').html();
+			form = form.replace(/data-btn="cancel"/, '/onclick="lesson.lessonImageUploadCancel(' + id +')"');
+			$('#lessonImage_' + id).html(form);
+			$('#lessonImage_' + id + ' input[type=hidden]').val(id);
+
+			lesson.ajaxForm('#lessonImage_' + id + ' form', 'lessonImageUpload', function(response){
+				$('#lessonImage_' + id).html('');
+				$('.thumbs-panel .tab-holder').html(response.thumbHTML);
+				/*
+				if (paraID == id) {
+					$('.nav-links .play').show();
+					$('.audio source').attr('src', response.file);
+				}
+				*/
+			});
+		}
+	},
+
+	lessonImageUploadCancel: function(id) {
+		$('#lessonImage_' + id).html('');
 	},
 
 	chapterUpdate: function(id) {

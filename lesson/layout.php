@@ -225,7 +225,7 @@ jQuery(window).on('mercury:ready', function() {
 			</div>
 			<div id="tab-1" class="tab thumbs-panel">
 				<div class="heading">
-					<h3><span>Курсы</span></h3>
+					<h3><span>Уроки</span></h3>
 				</div>
 				<div class="tab-scroll">
 					<div class="tab-holder">
@@ -239,9 +239,8 @@ jQuery(window).on('mercury:ready', function() {
 					<h3><span>Оглавление</span></h3>
 				</div>
 				<div class="tab-preambula">
-					<img class="main" src="<?=$lessonInfo['Thumb']['thumb']?>" alt="<?=$lessonInfo['Lesson']['lesson_title']?>">
-					<b><?=$lessonInfo['Lesson']['course_name']?>:</b>
-					<h3><?=$lessonInfo['Lesson']['lesson_title']?></h3>
+					<img class="main" src="<?=$lessonInfo['Thumb']?>" alt="<?=$lessonInfo['Lesson']['title']?>">
+					<h3><?=$lessonInfo['Lesson']['title']?></h3>
 				</div>
 				<div class="tab-scroll">
 					<div class="tab-holder">
