@@ -1,9 +1,9 @@
 <?
-	if ($aResults) {
-		foreach($aResults as $post) {
+	if ($aResults['Post']) {
+		foreach($aResults['Post'] as $post) {
 ?>
 <div id="post_<?=$post['id']?>" class="post-rec">
-	<?=userDate($post['created'])?> <b><?=$post['username']?></b>
+	<?=userDate($post['created'])?> <b><?=$aResults['User'][$post['user_id']]['user_nicename']?></b>
 <?
 	if ($post['user_id'] == $user_ID) {
 ?>

@@ -3,14 +3,17 @@ require_once('wp-config.php');
 
 define('BASE_DIR', './lesson/');
 define('INCLUDE_DIR', BASE_DIR.'includes/');
+define('MODEL_DIR', BASE_DIR.'models/');
+define('API_DIR', BASE_DIR.'api/');
 define('UPLOAD_DIR', './lesson/files/');
 
 require_once(INCLUDE_DIR.'request.php');
 require_once(INCLUDE_DIR.'db_adapter.php');
 require_once(INCLUDE_DIR.'model.php');
+require_once(API_DIR.'load_api.php');
 @require_once(INCLUDE_DIR.'image.php');
 
-$mediaModel = new LessonModel('media');
+$mediaModel = LessonModel::getModel('media');
 
 $id = Request::GET('id', 0);
 $file = Request::GET('file', '');

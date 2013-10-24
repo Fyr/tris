@@ -1,9 +1,11 @@
 <?
-define('BASE_DIR', '../../');
-define('INCLUDE_DIR', BASE_DIR.'lesson/includes/');
-define('UPLOAD_DIR', BASE_DIR.'lesson/files/');
+define('BASE_DIR', '../../lesson/');
+define('INCLUDE_DIR', BASE_DIR.'includes/');
+define('MODEL_DIR', BASE_DIR.'models/');
+define('API_DIR', BASE_DIR.'api/');
+define('UPLOAD_DIR', BASE_DIR.'files/');
 
-require_once(BASE_DIR.'wp-config.php');
+require_once(BASE_DIR.'../wp-config.php');
 
 require_once(INCLUDE_DIR.'request.php');
 require_once(INCLUDE_DIR.'db_adapter.php');

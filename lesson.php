@@ -1,5 +1,5 @@
 <?
-// define('DEBUG_SQL', true);
+define('DEBUG_SQL', true);
 
 if (!session_id()) {
     session_start();
@@ -14,6 +14,8 @@ if (!$user_ID || !$user_identity) {
 
 define('BASE_DIR', './lesson/');
 define('INCLUDE_DIR', BASE_DIR.'includes/');
+define('MODEL_DIR', BASE_DIR.'models/');
+define('API_DIR', BASE_DIR.'api/');
 define('PUBLIC_DIR', './lesson/assets/');
 define('UPLOAD_DIR', './lesson/files/');
 define('LAST_VISITED', 3);
@@ -22,10 +24,10 @@ define('UPLOADS_DIR', '/wp-content/uploads/');
 
 require_once(INCLUDE_DIR.'request.php');
 require_once(INCLUDE_DIR.'db_adapter.php');
-require_once(INCLUDE_DIR.'db_model.php');
 require_once(INCLUDE_DIR.'model.php');
 require_once(INCLUDE_DIR.'view.php');
 require_once(INCLUDE_DIR.'lib_text.php');
+require_once(API_DIR.'load_api.php');
 
 require_once(BASE_DIR.'actions.php');
 
@@ -57,7 +59,7 @@ if ($lessonID && $action) {
 	exit(json_encode($response));
 }
 
-$paraModel = new LessonModel('paragraphs');
+$paraModel = LessonModel::getModel('paragraphs');
 
 // Init current paragraph
 $paragraph = false;
@@ -70,7 +72,9 @@ if (!$paraID) {
 	}
 	if (!$paraID) {
 		$paragraph = $paraModel->getFirstParagraph($lessonID);
+		fdebug($paragraph);
 		$paraID = (isset($paragraph['id']) && $paragraph['id']) ? $paragraph['id'] : 0;
+		fdebug($paraID, 'tmp1.log');
 		if (!$paraID) {
 			if ($lEditMode) {
 				// create sample chapter with paragraph
@@ -86,6 +90,7 @@ if (!$paraID) {
 	}
 }
 $paragraph = $paraModel->getItem($paraID);
+fdebug(array($paraID, $paragraph), 'tmp2.log');
 
 $aParaInfo = $paraModel->getParagraphList(array('lesson_id' => $lessonID)); // for navigation btw paragraphs (next, prev, slider)
 
@@ -121,7 +126,7 @@ if ($lEditMode) {
 	// $contentHTML = $lsActions->renderContent($paraID, false); // get HTML-content for main text
 }
 
-$audioModel = new LessonModel('media');
+$audioModel = LessonModel::getModel('media');
 $audio = $audioModel->getMediaItem('audio', 'Paragraph', $paraID);
 
 require_once(BASE_DIR.'layout.php');

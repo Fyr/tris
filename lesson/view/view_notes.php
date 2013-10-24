@@ -6,7 +6,7 @@
 		foreach($aNotes as $post) {
 ?>
 <div id="note_<?=$post['id']?>" class="post-rec">
-	<?=userDate($post['created'])?> <b><?=$post['username']?></b>
+	<?=userDate($post['created'])?></b>
 	<div align="left" class="btn-group pull-right">
 		<a href="javascript:void(0)" data-toggle="dropdown" class="btn btn-mini dropdown-toggle pull-right">
 			<span class="caret"></span>
@@ -37,7 +37,7 @@
 		foreach($aResults as $post) {
 ?>
 <div id="note_<?=$post['id']?>" class="post-rec">
-	<?=userDate($post['created'])?> <b><?=$post['username']?></b><br />
+	<?=userDate($post['created'])?><br />
 	<a href="javascript:void(0)" onclick="lesson.switchPara(<?=$post['para_id']?>)"><?=$post['para_title']?></a>
 	<div align="left" class="btn-group pull-right">
 		<a href="javascript:void(0)" data-toggle="dropdown" class="btn btn-mini dropdown-toggle pull-right">

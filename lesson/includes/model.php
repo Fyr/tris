@@ -2,7 +2,25 @@
 require_once('path.php');
 require_once('db_model.php');
 
-class LessonModel extends DBmodel {
+class LessonModel extends DBModel {
+
+	public static function getModel($tableName) {
+		$className = '';
+		foreach(explode('_', $tableName) as $part) {
+			$className.= ucfirst($part);
+		}
+		if (substr($className, -1, 1) == 's') {
+			$className = substr($className, 0, strlen($className) - 1);
+		}
+
+		$module = MODEL_DIR.strtolower($className).'.php';
+		if (file_exists($module)) {
+			require_once($module);
+			$className = $className.'Model';
+			return new $className($tableName);
+		}
+		return new LessonModel($tableName);
+	}
 
 	public function deleteSnippetOptions($paraID) {
 		$this->db->query(
@@ -20,16 +38,6 @@ WHERE s.paragraph_id = %d', $paraID),
 		);
 	}
 
-	public function getFirstParagraph($lessonID) {
-		$sql = $this->db->prepare('SELECT p.* FROM '.$this->getTableName('chapters').' AS c
-			LEFT JOIN '.$this->getTableName('paragraphs').' AS p ON p.chapter_id = c.id
-			WHERE c.lesson_id = %d
-			ORDER BY c.sort_order, p.sort_order', $lessonID
-		);
-		$_ret = $this->db->get_row($sql, ARRAY_A);
-		return $_ret;
-	}
-
 	public function sortMove($id, $dir, $conditions) {
 		$row = $this->getItem($id); // get sort order of record to move
 
@@ -44,27 +52,6 @@ WHERE s.paragraph_id = %d', $paraID),
 		// Exchange sort orders of 2 recs
 		$this->save(array('id' => $id, 'sort_order' => $ret['sort_order']));
 		$this->save(array('id' => $ret['id'], 'sort_order' => $row['sort_order']));
-	}
-
-	public function getParagraphList($filters = array()) {
-		$conditions = array();
-		if (isset($filters['lesson_id'])) {
-			$conditions['c.lesson_id'] = $filters['lesson_id'];
-		}
-		if (isset($filters['favorite'])) {
-			$conditions['p.favorite'] = ($filters['favorite']) ? 1 : 0;
-		}
-		if (isset($filters['key'])) {
-			// $conditions['p.favorite'] = ($filters['favorite']) ? 1 : 0;
-			// TODO: implement search by key
-		}
-		$sql = 'SELECT p.id, p.title, p.chapter_id, c.lesson_id, c.title as chapter_title, m.id AS audio_id, m.file AS audio_file, p.subheaders
-			FROM '.$this->getTableName('paragraphs').' AS p
-			JOIN '.$this->getTableName('chapters').' AS c ON p.chapter_id = c.id
-			LEFT JOIN '.$this->getTableName('media').' AS m ON p.id = m.object_id AND m.media_type = "audio" '.
-			$this->getSQLWhere($conditions).
-			' ORDER BY c.sort_order, p.sort_order';
-		return $this->db->get_results($sql, ARRAY_A);
 	}
 
 	public function search($q, $lessonID) {
@@ -193,13 +180,21 @@ WHERE s.paragraph_id = %d', $paraID),
 	}
 
 	public function getPosts($paraID) {
+		/*
 		$sql = $this->db->prepare('SELECT p.*, u.user_nicename AS username FROM '.$this->getTableName('posts').' AS p
 			JOIN '.$this->getWPTableName('users').' AS u ON u.ID = p.user_id
 			WHERE para_id = %d
 			ORDER BY p.created',
 			$paraID
 		);
-		return $this->db->get_results($sql, ARRAY_A);
+		*/
+		$aPosts = $this->findAll(array('para_id' => $paraID), 'created');
+		$aID = array();
+		foreach($aPosts as $post) {
+			$aID[] = $post['user_id'];
+		}
+		$aUsers = $this->getUsersList(array('u.ID' => $aID));
+		return array('Post' => $aPosts, 'User' => $aUsers);
 	}
 
 	public function getNotes($userID) {
@@ -226,39 +221,9 @@ WHERE s.paragraph_id = %d', $paraID),
 		return array('Lesson' => $this->getItem($lessonID), 'Thumb' => $mediaModel->getMediaItem('image', 'LessonThumb', $lessonID, '&w=150&h=150'));
 	}
 
-	public function getLastVisited($userID, $lessonID = 0, $lEditMode = false) {
-		$conditions = array('v.user_id' => $userID);
-		if ($lessonID) {
-			$conditions['c.lesson_id'] = $lessonID;
-		}
-		$sql = "SELECT * FROM ".$this->getTableName('lessons')." AS l
-LEFT JOIN (SELECT * FROM (
-SELECT v.para_id, p.title as para_title, p.chapter_id, c.title as chapter_title, c.lesson_id, v.last_visited
-FROM ".$this->getTableName('visited')." AS v
-JOIN ".$this->getTableName('paragraphs')." AS p ON p.id = v.para_id
-JOIN ".$this->getTableName('chapters')." AS c ON c.id = p.chapter_id
-".$this->getSQLWhere($conditions)."
-ORDER BY v.last_visited DESC, c.sort_order, p.sort_order
-) AS t GROUP BY lesson_id) AS t2 ON t2.lesson_id = l.id";
-		if ($lEditMode) {
-			$sql.= " ORDER BY id";
-		} else {
-			$sql.= " ORDER BY last_visited DESC";
-		}
-		$aRowset = $this->query($sql, ARRAY_A);
-		return $aRowset;
-	}
-
 	public function getUsersList($conditions = array()) {
-		$sql = $this->db->prepare('SELECT * FROM '.$this->getWPTableName('users').' AS u '.
-			$this->getSQLWhere($conditions).' ORDER BY u.ID'
-		);
-		$aRowset = $this->query($sql);
-		$aUsers = array();
-		foreach($aRowset as $row) {
-			$aUsers[$row['ID']] = $row;
-		}
-		return $aUsers;
+		$apiModel = new LessonAPI();
+		return $apiModel->getUsersList($conditions);
 	}
 
 	public function getImageList($conditions = array(), $image_type = 'shop_thumbnail') {

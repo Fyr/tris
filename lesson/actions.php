@@ -15,15 +15,15 @@ class LessonActions {
 		}
 		$this->userID = $userID;
 
-		$this->chapterModel = new LessonModel('chapters');
-		$this->paraModel = new LessonModel('paragraphs');
-		$this->snippetModel = new LessonModel('snippets');
-		$this->snipOptsModel = new LessonModel('snippet_options');
-		$this->postModel = new LessonModel('posts');
-		$this->noteModel = new LessonModel('notes');
-		$this->mediaModel = new LessonModel('media');
-		$this->visitedModel = new LessonModel('visited');
-		$this->lessonModel = new LessonModel('lessons');
+		$this->chapterModel = LessonModel::getModel('chapters');
+		$this->paraModel = LessonModel::getModel('paragraphs');
+		$this->snippetModel = LessonModel::getModel('snippets');
+		$this->snipOptsModel = LessonModel::getModel('snippet_options');
+		$this->postModel = LessonModel::getModel('posts');
+		$this->noteModel = LessonModel::getModel('notes');
+		$this->mediaModel = LessonModel::getModel('media');
+		$this->visitedModel = LessonModel::getModel('visited');
+		$this->lessonModel = LessonModel::getModel('lessons');
 	}
 
 	protected function set($key, $value) {
@@ -356,7 +356,7 @@ class LessonActions {
 
 		$this->set('aResults', $aResults);
 		$this->set('user_ID', $user_ID);
-		return array('html' => $this->render('view_posts'), 'count' => (is_array($aResults)) ? count($aResults) : 0);
+		return array('html' => $this->render('view_posts'), 'count' => (isset($aResults['Post'])) ? count($aResults['Post']) : 0);
 	}
 
 	public function postUpdate($data) {
@@ -475,7 +475,7 @@ class LessonActions {
 	}
 
 	public function getThumbInfo($lEditMode = false) {
-		$lastVisited = $this->visitedModel->getLastVisited($this->userID, null, $lEditMode);
+		$lastVisited = $this->paraModel->getLastVisited($this->userID, null, $lEditMode);
 		$aThumbs = $this->mediaModel->getThumbsList();
 		return array('LastVisited' => $lastVisited, 'Thumb' => $aThumbs);
 	}
