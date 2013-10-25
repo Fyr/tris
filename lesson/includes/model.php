@@ -9,33 +9,20 @@ class LessonModel extends DBModel {
 		foreach(explode('_', $tableName) as $part) {
 			$className.= ucfirst($part);
 		}
+
+		$module = $tableName;
 		if (substr($className, -1, 1) == 's') {
 			$className = substr($className, 0, strlen($className) - 1);
+			$module = substr($tableName, 0, strlen($tableName) - 1);
 		}
 
-		$module = MODEL_DIR.strtolower($className).'.php';
+		$module = MODEL_DIR.strtolower($module).'.php';
 		if (file_exists($module)) {
 			require_once($module);
 			$className = $className.'Model';
 			return new $className($tableName);
 		}
 		return new LessonModel($tableName);
-	}
-
-	public function deleteSnippetOptions($paraID) {
-		$this->db->query(
-			$this->db->prepare('DELETE FROM '.$this->getTableName('snippet_options').'
-				WHERE snippet_id IN (SELECT id FROM '.$this->getTableName('snippets').' AS s WHERE s.paragraph_id = %d)', $paraID)
-		);
-	}
-
-	public function getSnippetOptions($paraID) {
-		return $this->db->get_results(
-			$this->db->prepare('SELECT so.*, s.* FROM ls_snippets AS s
-LEFT JOIN ls_snippet_options AS so ON so.snippet_id = s.id
-WHERE s.paragraph_id = %d', $paraID),
-			ARRAY_A
-		);
 	}
 
 	public function sortMove($id, $dir, $conditions) {
@@ -52,14 +39,6 @@ WHERE s.paragraph_id = %d', $paraID),
 		// Exchange sort orders of 2 recs
 		$this->save(array('id' => $id, 'sort_order' => $ret['sort_order']));
 		$this->save(array('id' => $ret['id'], 'sort_order' => $row['sort_order']));
-	}
-
-	public function search($q, $lessonID) {
-		$sql = 'SELECT p.id, p.title, p.chapter_id, c.lesson_id, c.title as chapter_title, p.content_cached, m.id AS audio_id, m.file AS audio_file FROM '.$this->getTableName('paragraphs').' AS p
-			JOIN '.$this->getTableName('chapters').' AS c ON p.chapter_id = c.id
-			LEFT JOIN '.$this->getTableName('media').' AS m ON p.id = m.object_id AND m.media_type = "audio"
-			WHERE lesson_id = '.intval($lessonID).' AND (p.title LIKE "%'.$q.'%" OR p.content_cached LIKE "%'.$q.'%")';
-		return $this->db->get_results($sql, ARRAY_A);
 	}
 
 	public function getPath($type, $id) {
@@ -245,5 +224,10 @@ WHERE s.paragraph_id = %d', $paraID),
 			}
 		}
 		return $aImages;
+	}
+
+	public function checkUserAccess($lessonID, $userID) {
+		$apiModel = new LessonAPI();
+		return $apiModel->checkUserAccess($lessonID, $userID);
 	}
 }

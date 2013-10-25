@@ -26,6 +26,17 @@ class LessonActions {
 		$this->lessonModel = LessonModel::getModel('lessons');
 	}
 
+	/* TODO:
+	public function runAction($action, $data = array()) {
+		if (method_exists($this, $action)) {
+			return array('status' => 'ERROR', 'errMsg' => 'Вызов несуществующего метода');
+		}
+	}
+	*/
+	public function checkAccess() {
+		return $this->lessonModel->checkUserAccess($this->lessonID, $this->userID);
+	}
+
 	protected function set($key, $value) {
 		$this->View->set($key, $value);
 	}
@@ -130,7 +141,7 @@ class LessonActions {
 		$this->postModel->deleteAll(array('para_id' => $data['id']));
 
 		// Delete snippets and its options
-		$this->snipOptsModel->deleteSnippetOptions($data['id']);
+		$this->snippetModel->deleteSnippetOptions($data['id']);
 		$this->snippetModel->deleteAll(array('paragraph_id' => $data['id']));
 
 		// Delete stats
@@ -200,7 +211,7 @@ class LessonActions {
 		$this->paraModel->save($data);
 
 		// Save snippets
-		$this->snipOptsModel->deleteSnippetOptions($data['id']);
+		$this->snippetModel->deleteSnippetOptions($data['id']);
 		$this->snippetModel->deleteAll(array('paragraph_id' => $data['id']));
 		if (isset($_data['mercury-content']['snippets'])) {
 			foreach ($_data['mercury-content']['snippets'] as $snippet_id => $snippet) {

@@ -49,7 +49,21 @@ $lessonID = Request::GET('id', 0); // (isset($_GET['id']) && $_GET['id']) ?$_GET
 $paraID = Request::GET('p', 0);
 
 $lsActions = new LessonActions($lessonID, $user_ID);
-if ($lessonID && $action) {
+if (!$lsActions->checkAccess()) {
+?>
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+</head>
+<body onload="setTimeout(function() { window.location.href='/'; }, 5000);">
+У вас нет доступа к уроку! Подождите, происходит перенаправление...
+</body>
+</html>
+<?
+	exit;
+} elseif ($lessonID && $action) {
+	// $response = $lsActions->runMethod($action, $_POST);
 	$response = $lsActions->$action($_POST);
 	if ($response['status'] == 'OK') {
 		if ($lEditMode || $action == 'switchPara') {
@@ -72,9 +86,7 @@ if (!$paraID) {
 	}
 	if (!$paraID) {
 		$paragraph = $paraModel->getFirstParagraph($lessonID);
-		fdebug($paragraph);
 		$paraID = (isset($paragraph['id']) && $paragraph['id']) ? $paragraph['id'] : 0;
-		fdebug($paraID, 'tmp1.log');
 		if (!$paraID) {
 			if ($lEditMode) {
 				// create sample chapter with paragraph
@@ -90,7 +102,6 @@ if (!$paraID) {
 	}
 }
 $paragraph = $paraModel->getItem($paraID);
-fdebug(array($paraID, $paragraph), 'tmp2.log');
 
 $aParaInfo = $paraModel->getParagraphList(array('lesson_id' => $lessonID)); // for navigation btw paragraphs (next, prev, slider)
 
