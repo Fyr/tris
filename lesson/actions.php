@@ -598,6 +598,7 @@ class LessonActions {
 		foreach($chapters as $row) {
 			$this->chapterDelete(array('id' => $row['id']));
 		}
+		$this->lessonModel->delete($data['id']);
 		return array('status' => 'OK', 'thumbHTML' => $this->getThumbContent(true));
 	}
 
