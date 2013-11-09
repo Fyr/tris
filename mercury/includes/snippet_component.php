@@ -1,8 +1,10 @@
 <?
-class SnippetActions {
+class SnippetComponent {
 
 	protected $View;
 	protected $paraID, $snippetInfo;
+	protected $uses = array();
+	protected $components = array();
 
 	public function __construct($snippetInfo, $paraID) {
 		$this->View = new View();
@@ -16,9 +18,9 @@ class SnippetActions {
 		$this->View->set($key, $value);
 	}
 
-	protected function render($action) {
+	public function render($action) {
 		$this->set('assetsPath', $this->snippetInfo['assetsPath']);
-		return $this->View->render($this->snippetInfo['basePath'].'view/'.$action.'.php');
+		return $this->View->render($this->snippetInfo['path'].'view/'.$action.'.php');
 	}
 
 	public function options() {

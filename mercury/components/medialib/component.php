@@ -1,7 +1,5 @@
 <?
-class GalleryActions extends SnippetActions {
-
-	protected $uses = array('Medialib');
+class MedialibComponent extends SnippetComponent {
 
 	public function options() {
 		$this->set('images', $this->lessonModel->getImageList(array(), array('shop_thumbnail', 'large')));

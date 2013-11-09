@@ -1,0 +1,7 @@
+.gallery-snippet .gallery-thumb {
+    margin: 0 6px 6px 0;
+    padding: 4px;
+    width: 78px;
+}
+.gallery-snippet span { display: block; font-size: 11px; }
+.container-scroll-box-holder { height: auto;}

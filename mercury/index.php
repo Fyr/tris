@@ -1,5 +1,5 @@
 <?
-define('BASE_DIR', '../../lesson/');
+define('BASE_DIR', '../lesson/');
 define('INCLUDE_DIR', BASE_DIR.'includes/');
 define('MODEL_DIR', BASE_DIR.'models/');
 define('API_DIR', BASE_DIR.'api/');
@@ -12,13 +12,13 @@ require_once(INCLUDE_DIR.'db_adapter.php');
 require_once(INCLUDE_DIR.'model.php');
 require_once(INCLUDE_DIR.'view.php');
 
-require_once('snippet_actions.php');
-require_once('init_snippets.php');
+require_once('./includes/snippet_actions.php');
+require_once('./includes/init_snippets.php');
 
 $snippet = Request::GET('snippet');
 $action = Request::GET('action');
 $paraID = Request::GET('paraID');
-$basePath = './'.$snippet.'/';
+$basePath = './';
 
 $response = initSnippetResponse($snippet, $action, $basePath, $paraID);
 if (is_array($response)) {
