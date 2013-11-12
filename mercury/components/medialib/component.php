@@ -1,18 +1,9 @@
 <?
-class MedialibComponent extends SnippetComponent {
+class MediaLibComponent extends SnippetComponent {
 
 	public function options() {
 		$this->set('images', $this->lessonModel->getImageList(array(), array('shop_thumbnail', 'large')));
 		return parent::options();
-	}
-
-	public function preview() {
-		$images = $this->lessonModel->getImageList(
-			array('id' => explode(',', Request::POST('img_ids'))),
-			array('shop_thumbnail', 'large')
-		);
-		$this->set('images', $images);
-		return parent::preview();
 	}
 
 	public function getImage($data) {

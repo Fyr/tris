@@ -61,8 +61,8 @@
       </div>
     </fieldset>
 
-    <?=$this->Medialib->render('load_image')?>
-    <?=$this->Medialib->options()?>
+    <?=$this->MediaLib->render('load_image')?>
+    <?=$this->MediaLib->options()?>
 
     <fieldset>
       <legend>&nbsp;Изображения&nbsp;</legend>

@@ -257,8 +257,8 @@ class LessonActions {
 			$_POST['snippet_id'] = $snippet_id;
 
 			// Init snippet action class
-			$basePath = './mercury/snippets/'.$snippet.'/';
-			$html = initSnippetResponse($snippet, 'preview', $basePath, $paraID);
+			$basePath = './mercury/';
+			$html = initSnippetResponse($snippet, 'preview', $paraID);
 
 			// Strip <script> content as it causes Mercury error
 			$pos = strpos($html, '<script');

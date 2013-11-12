@@ -1,6 +1,8 @@
 <?
 class ParaimageActions extends SnippetActions {
 
+	protected $uses = array('MediaLib');
+
 	public function options() {
 		$this->set('images', $this->lessonModel->getImageList(array(), array('shop_thumbnail', 'large')));
 		return parent::options();

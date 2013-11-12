@@ -15,12 +15,12 @@ require_once(INCLUDE_DIR.'view.php');
 require_once('./includes/snippet_actions.php');
 require_once('./includes/init_snippets.php');
 
+$type = Request::GET('type', 'snippet');
 $snippet = Request::GET('snippet');
 $action = Request::GET('action');
 $paraID = Request::GET('paraID');
-$basePath = './';
 
-$response = initSnippetResponse($snippet, $action, $basePath, $paraID);
+$response = initSnippetResponse($snippet, $action, $paraID, $type);
 if (is_array($response)) {
 	exit(json_encode($response));
 }

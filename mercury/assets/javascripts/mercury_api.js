@@ -14,11 +14,17 @@ SnippetAPI = function() {
 		$('.form-actions .actions', panel).show();
 		$('.form-actions .loader', panel).hide();
 	},
-	this.sendRequest = function(e, snippet, action, data, successFn) {
+	this.sendActionRequest = function(e, snippet, action, data, successFn) {
+		self.sendRequest(e, 'snippet', snippet, action, data, successFn);
+	},
+	this.sendComponentRequest = function(e, snippet, action, data, successFn) {
+		self.sendRequest(e, 'component', snippet, action, data, successFn);
+	},
+	this.sendRequest = function(e, type, snippet, action, data, successFn) {
 		var panel = self.getJQContext(e);
 		self.beforeRequest(panel);
 		$.ajax({
-			url: '/mercury/snippets/index.php?snippet=' + snippet + '&action=' + action + '&para_id=' + paraID,
+			url: '/mercury/index.php?snippet=' + snippet + '&type=' + type + '&action=' + action + '&para_id=' + paraID,
 			data: data,
 			type: 'post',
 			dataType: 'json',
@@ -32,7 +38,6 @@ SnippetAPI = function() {
 			}
 		});
 	},
-
 	this.checkResponse = function(response) {
 		if (response && response.status && response.status == 'ERROR') {
 			alert(response.errMsg);
@@ -94,7 +99,7 @@ SnippetAPI = function() {
 	this.deleteImage = function (e) {
 		var panel = self.getJQContext(e);
 		var id = $('.choose-thumb.selected', panel).attr('id').replace(/thumb_/, '');
-		self.sendRequest(e, 'paraimage', 'deleteImage', {id: id, img_src: $('#img_src', panel).val()}, function(panel, response){
+		self.sendActionRequest(e, 'paraimage', 'deleteImage', {id: id, img_src: $('#img_src', panel).val()}, function(panel, response){
 			$('.chooseThumb', panel).html(response.thumbsHTML);
 			self.enableActions(e, false);
 		});
@@ -136,7 +141,7 @@ SnippetAPI = function() {
 					// begin upload
 					var snippet = 'paraimage', action = 'upload';
 					$.ajax({
-						url: '/mercury/snippets/index.php?snippet=' + snippet + '&action=' + action + '&para_id=' + paraID,
+						url: '/mercury/index.php?snippet=' + snippet + '&action=' + action + '&para_id=' + paraID,
 						type: "POST",
 						data: formdata,
 						dataType: 'json',

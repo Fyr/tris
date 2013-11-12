@@ -390,6 +390,12 @@ function initNavi(paraID) {
 		heightStyle: "content"
 	});
 	$(".content-panel .accordion").accordion('option', 'active', lesson.getCurrChapterIndex(paraID));
+
+	setTimeout(function() {
+			$('#para_' + paraID).closest('.tab-scroll').animate({scrollTop : $('#para_' + paraID).position().top}, 1000);
+		},
+		800
+	);
 }
 
 function initTopIcons(lFav) {

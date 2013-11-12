@@ -1,7 +1,7 @@
 <?php
 class View {
 
-	private $template = '', $data = array();
+	private $template = '', $data = array(), $objData = array();
 
 	public function __construct($template = '') {
 		$this->setTemplate($template);
@@ -23,6 +23,10 @@ class View {
 		return $this->data;
 	}
 
+	public function setObj($objName, $class) {
+		$this->objData[$objName] = $class;
+	}
+
 	public function render($template = '', $data = array()) {
 		$template = ($template) ? $template : $this->getTemplate();
 		$data = ($data) ? $data : $this->getData();
@@ -30,6 +34,10 @@ class View {
 		// Init variables for view from data storage
 		foreach($data as $var => $val) {
 			$$var = $val;
+		}
+
+		foreach($this->objData as $objName => $class) {
+			$this->$objName = $class;
 		}
 
 		ob_start();

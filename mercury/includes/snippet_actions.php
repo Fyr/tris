@@ -17,7 +17,7 @@ class SnippetActions extends SnippetComponent {
 	}
 
 	protected function _loadSnippet($snippet) {
-		$class = getSnippetClass($snippet, $this->snippetInfo['basePath'], $this->paraID, 'component');
+		$class = getSnippetClass($snippet, $this->paraID, 'component');
 		$this->View->setObj($snippet, $class);
 		return $class;
 	}

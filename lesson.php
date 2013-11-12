@@ -31,8 +31,8 @@ require_once(API_DIR.'load_api.php');
 
 require_once(BASE_DIR.'actions.php');
 
-require_once('./mercury/snippets/snippet_actions.php');
-require_once('./mercury/snippets/init_snippets.php');
+require_once('./mercury/includes/snippet_actions.php');
+require_once('./mercury/includes/init_snippets.php');
 
 // $lEditMode = Request::GET('edit', false);// ($user_ID && $user_identity);
 // Init edit mode via session - this is the only secure way for AJAX-requests

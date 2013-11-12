@@ -1,11 +1,11 @@
 <?
-function getSnippetPath($snippet, $basePath, $type = 'snippet') {
-	return $basePath.$type.'s/'.strtolower($snippet).'/';
+function getSnippetPath($snippet, $type = 'snippet') {
+	return BASE_DIR.'../mercury/'.$type.'s/'.strtolower($snippet).'/';
 }
 
-function getSnippetClassName($snippet, $basePath, $type = 'snippet') {
+function getSnippetClassName($snippet, $type = 'snippet') {
 	$className = ($type == 'component') ? 'Component' : 'Actions';
-	$class = getSnippetPath($snippet, $basePath, $type).strtolower($className).'.php';
+	$class = getSnippetPath($snippet, $type).strtolower($className).'.php';
 	if (file_exists($class)) {
 		$className = ucfirst($snippet.$className);
 		require_once($class);
@@ -15,20 +15,19 @@ function getSnippetClassName($snippet, $basePath, $type = 'snippet') {
 	return $className;
 }
 
-function getSnippetClass($snippet, $basePath, $paraID, $type = 'snippet') {
-	$className = getSnippetClassName($snippet, $basePath, $type);
+function getSnippetClass($snippet, $paraID, $type = 'snippet') {
+	$className = getSnippetClassName($snippet, $type);
 	$snippetInfo = array(
 		'snippet' => $snippet,
 		'action' => $action,
-		'basePath' => $basePath,
-		'path' => getSnippetPath($snippet, $basePath, $type), // used to render views
+		'path' => getSnippetPath($snippet, $type), // used to render views
 		'assetsPath' => '/mercury/snippets/'.$snippet.'/assets/' // used inside views to get public resources (for ex. preview)
 	);
 	return new $className($snippetInfo, $paraID);
 }
 
-function initSnippetResponse($snippet, $action, $basePath, $paraID) {
-	$snippetActions = getSnippetClass($snippet, $basePath, $paraID);
+function initSnippetResponse($snippet, $action, $paraID, $type = 'snippet') {
+	$snippetActions = getSnippetClass($snippet, $paraID, $type);
 	$response = $snippetActions->$action($_POST);
 	return $response;
 }
