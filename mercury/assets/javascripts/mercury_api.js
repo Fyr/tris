@@ -14,16 +14,16 @@ SnippetAPI = function() {
 		$('.form-actions .actions', panel).show();
 		$('.form-actions .loader', panel).hide();
 	},
-	this.sendActionRequest = function(e, snippet, action, data, successFn) {
-		self.sendRequest(e, 'snippet', snippet, action, data, successFn);
+	this.sendActionRequest = function(e, snippet, action, data, successFn, reqOptions) {
+		self.sendRequest(e, 'snippet', snippet, action, data, successFn, reqOptions);
 	},
-	this.sendComponentRequest = function(e, snippet, action, data, successFn) {
-		self.sendRequest(e, 'component', snippet, action, data, successFn);
+	this.sendComponentRequest = function(e, snippet, action, data, successFn, reqOptions) {
+		self.sendRequest(e, 'component', snippet, action, data, successFn, reqOptions);
 	},
-	this.sendRequest = function(e, type, snippet, action, data, successFn) {
+	this.sendRequest = function(e, type, snippet, action, data, successFn, reqOptions) {
 		var panel = self.getJQContext(e);
 		self.beforeRequest(panel);
-		$.ajax({
+		ajaxOptions = {
 			url: '/mercury/index.php?snippet=' + snippet + '&type=' + type + '&action=' + action + '&para_id=' + paraID,
 			data: data,
 			type: 'post',
@@ -36,7 +36,11 @@ SnippetAPI = function() {
 					}
 				}
 			}
-		});
+		};
+		if (reqOptions) {
+			ajaxOptions = $.extend(ajaxOptions, reqOptions);
+		}
+		$.ajax(ajaxOptions);
 	},
 	this.checkResponse = function(response) {
 		if (response && response.status && response.status == 'ERROR') {
@@ -45,34 +49,29 @@ SnippetAPI = function() {
 		}
 		return true;
 	},
-	this.selectThumb = function(e, img_src) {
+	this.getSelectedThumbsIDs = function(e) {
 		var panel = self.getJQContext(e);
-		// Select thumb
-		$('.choose-thumb', panel).removeClass('selected');
-		$(e).addClass('selected');
 
-		self.enableActions(e, true);
-
-		// Remember ing_src option
-		$('#img_src', panel).val(img_src);
-	},
-	this.selectThumbList = function(e, img_src) {
-		var panel = self.getJQContext(e);
-		// Select thumb
-		if ($(e).hasClass('selected')) {
-			$(e, panel).removeClass('selected');
-		} else {
-			$(e).addClass('selected');
-		}
-
-		self.enableActions(e, $('.choose-thumb.selected', panel).size());
-
-		// Remember img_src option
 		var ids = new Array();
 		$('.choose-thumb.selected', panel).each(function(){
 			ids.push(this.id.replace(/thumb_/, ''));
 		});
-		$('#img_ids', panel).val(ids.join());
+		return ids.join();
+	},
+	this.selectThumbs = function(e, lMultiSelect) {
+		var panel = self.getJQContext(e);
+		if (lMultiSelect) {
+			if ($(e).hasClass('selected')) {
+				$(e, panel).removeClass('selected');
+			} else {
+				$(e).addClass('selected');
+			}
+		} else {
+			$('.choose-thumb', panel).removeClass('selected');
+			$(e).addClass('selected');
+		}
+		self.enableActions(e, $('.choose-thumb.selected', panel).size());
+		$('#img_ids', panel).val(self.getSelectedThumbsIDs(e));
 	},
 	this.enableActions = function (e, lEnable) {
 		var panel = self.getJQContext(e);
@@ -98,13 +97,13 @@ SnippetAPI = function() {
 	},
 	this.deleteImage = function (e) {
 		var panel = self.getJQContext(e);
-		var id = $('.choose-thumb.selected', panel).attr('id').replace(/thumb_/, '');
-		self.sendActionRequest(e, 'paraimage', 'deleteImage', {id: id, img_src: $('#img_src', panel).val()}, function(panel, response){
+		// var id = $('.choose-thumb.selected', panel).attr('id').replace(/thumb_/, '');
+		self.sendComponentRequest(e, 'medialib', 'deleteImage', {img_ids: self.getSelectedThumbsIDs(e)}, function(panel, response){
 			$('.chooseThumb', panel).html(response.thumbsHTML);
 			self.enableActions(e, false);
 		});
 	},
-	this.uploadImage = function(e, selector, img_src) {
+	this.uploadImage = function(e, selector) {
 		var panel = self.getJQContext(e);
 
 		$('.uploadImages #form', panel).hide();
@@ -134,14 +133,24 @@ SnippetAPI = function() {
 				if (formdata) {
 					formdata.append(input.name, file);
 					formdata.append("lesson_id", lessonID);
-					formdata.append("img_src", img_src);
+					formdata.append("img_ids", self.getSelectedThumbsIDs(e));
 				}
 
 				if (formdata) {
 					// begin upload
-					var snippet = 'paraimage', action = 'upload';
+					var snippet = 'medialib', action = 'upload', type = 'component';
+					/*
+					self.sendComponentRequest(e, snippet, action, formdata, function(response) {
+						$('.uploadImages #form', panel).show();
+						$('.uploadImages .loader', panel).hide();
+
+						$(input).val('');
+						self.enableUpload(e, false);
+						$('.chooseThumb', panel).html(response.thumbsHTML);
+					}, {processData: false, contentType: false});
+					*/
 					$.ajax({
-						url: '/mercury/index.php?snippet=' + snippet + '&action=' + action + '&para_id=' + paraID,
+						url: '/mercury/index.php?snippet=' + snippet + '&type=' + type + '&action=' + action + '&para_id=' + paraID,
 						type: "POST",
 						data: formdata,
 						dataType: 'json',

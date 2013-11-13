@@ -1,25 +1,14 @@
 <?
 class MediaLibComponent extends SnippetComponent {
 
-	public function options() {
+	public function selectThumbOptions($lMultiSelect = false) {
 		$this->set('images', $this->lessonModel->getImageList(array(), array('shop_thumbnail', 'large')));
-		return parent::options();
+		$this->set('lMultiSelect', $lMultiSelect);
+		return $this->render('select_thumb_options');
 	}
 
-	public function getImage($data) {
-		$imgID = $data['id'];
-		$images = $this->lessonModel->getImageList(array('post_id' => $imgID), array('shop_thumbnail', 'large'));
-		return array('status' => 'OK', 'thumb' => $images[$imgID]['shop_thumbnail'], 'image_src' => $images[$imgID]['large']);
-	}
-
-	public function getThumbs($data) {
-		$images = $this->lessonModel->getImageList(array(), array('shop_thumbnail'));
-		return array('status' => 'OK', 'images' => $images);
-	}
-
-	public function getThumbsContent($data) {
+	public function getThumbsContent() {
 		$this->set('images', $this->lessonModel->getImageList(array(), array('shop_thumbnail', 'large')));
-		$this->set('img_src', $data['img_src']);
 		return $this->render('view_thumbs');
 	}
 
@@ -29,7 +18,7 @@ class MediaLibComponent extends SnippetComponent {
 		if (isset($_FILES[$input]['type']) && strpos($_FILES[$input]['type'], 'image') !== false) {
 			$response = $mediaModel->uploadMedia($input, 'image', 'Lesson', $data['lesson_id']);
 			if ($response['status'] == 'OK') {
-				$response['thumbsHTML'] = $this->getThumbsContent($data);
+				$response['thumbsHTML'] = $this->getThumbsContent();
 			}
 			return $response;
 		}
@@ -38,11 +27,13 @@ class MediaLibComponent extends SnippetComponent {
 
 	public function deleteImage($data) {
 		$mediaModel = new LessonModel('media');
-
-		$response = $mediaModel->delMediaItem($data['id']);
-		if ($response['status'] == 'OK') {
-			$response['thumbsHTML'] = $this->getThumbsContent($data);
+		foreach(explode(',', $data['img_ids']) as $img_id) {
+		$response = $mediaModel->delMediaItem($img_id);
+			if ($response['status'] == 'ERROR') {
+				return array('status' => 'ERROR', 'errMsg' => 'Ошибка удаления изображения');
+			}
 		}
+		$response['thumbsHTML'] = $this->getThumbsContent();
 		return $response;
 	}
 }

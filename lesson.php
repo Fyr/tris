@@ -1,5 +1,5 @@
 <?
-define('DEBUG_SQL', true);
+// define('DEBUG_SQL', true);
 
 if (!session_id()) {
     session_start();

@@ -61,46 +61,12 @@
       </div>
     </fieldset>
 
-    <?=$this->MediaLib->render('load_image')?>
-    <?=$this->MediaLib->options()?>
-
-    <fieldset>
-      <legend>&nbsp;Изображения&nbsp;</legend>
-      <div class="string optional">
-        <div class="controls">
-        	<div id="chooseThumb" class="chooseThumb" align="center" style="height: 180px; overflow-y: auto">
-<?
-	include('view_thumbs.php');
-?>
-        	</div>
-        </div>
-      </div>
-
-    </fieldset>
-
+    <?=$this->MediaLib->render('upload_image')?>
+    <?=$this->MediaLib->selectThumbOptions(true)?>
 
   </div>
-  <!--input type="hidden" id="img_src" name="img_src[]" value="<?=$img_src?>" /-->
-  <input type="hidden" id="img_ids" name="img_ids" value="<?=Request::POST('img_ids')?>" >
   <div class="form-actions mercury-display-controls">
-  	<span class="actions">
- <?
- 	if (Request::POST('img_ids')) {
- ?>
- 	<!--input class="btn btn-danger pull-left" name="delete" type="button" value="Удалить" onclick="Mercury.Snippet.API.deleteImage(this)"-->
-    <input class="btn btn-primary" name="commit" type="submit" value="Вставить">
-<?
- 	} else {
-?>
-	<!--input class="btn btn-danger pull-left disabled" name="delete" type="button" value="Удалить" disabled="true" onclick="Mercury.Snippet.API.deleteImage(this)"-->
-    <input class="btn btn-primary disabled" name="commit" type="submit" value="Вставить" disabled="true">
-<?
- 	}
-?>
-	</span>
-	<div class="loader" style="display: none;">
-		<img src="/mercury/assets/img/ajax-loader3.gif" alt="Подождите, идет загрузка..."/> Подождите, идет загрузка...
-	</div>
+  	<?=$this->MediaLib->render('action_buttons')?>
   </div>
 </form>
 <script>

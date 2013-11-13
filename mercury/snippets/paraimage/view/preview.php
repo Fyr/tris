@@ -22,5 +22,5 @@
 @import "<?=$assetsPath?>css/style.css";
 </style>
 <div style="<?=$style?>">
-<img src="<?=$_POST['img_src']?>" alt="" style="<?=$img_style?>" /> <span <? if ($edit) {?>contenteditable="true" onchange="onChangeEditable(this, 'editable')"<? } ?>><?=@$_POST['editable']?></span>
+<img src="<?=$img_src?>" alt="" style="<?=$img_style?>" /> <span <? if ($edit) {?>contenteditable="true" onchange="onChangeEditable(this, 'editable')"<? } ?>><?=@$_POST['editable']?></span>
 </div>
