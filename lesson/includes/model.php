@@ -25,6 +25,11 @@ class LessonModel extends DBModel {
 		return new LessonModel($tableName);
 	}
 
+	public function getLessonInfo($lessonID) {
+		$mediaModel = new LessonModel('media');
+		return array('Lesson' => $this->getItem($lessonID), 'Thumb' => $mediaModel->getMediaItemURL('image', 'LessonThumb', $lessonID, '&w=150&h=150'));
+	}
+
 	public function sortMove($id, $dir, $conditions) {
 		$row = $this->getItem($id); // get sort order of record to move
 
@@ -39,6 +44,34 @@ class LessonModel extends DBModel {
 		// Exchange sort orders of 2 recs
 		$this->save(array('id' => $id, 'sort_order' => $ret['sort_order']));
 		$this->save(array('id' => $ret['id'], 'sort_order' => $row['sort_order']));
+	}
+
+	public function getPosts($paraID) {
+		/*
+		$sql = $this->db->prepare('SELECT p.*, u.user_nicename AS username FROM '.$this->getTableName('posts').' AS p
+			JOIN '.$this->getWPTableName('users').' AS u ON u.ID = p.user_id
+			WHERE para_id = %d
+			ORDER BY p.created',
+			$paraID
+		);
+		*/
+		$aPosts = $this->findAll(array('para_id' => $paraID), 'created');
+		$aID = array();
+		foreach($aPosts as $post) {
+			$aID[] = $post['user_id'];
+		}
+		$aUsers = $this->getUsersList(array('u.ID' => $aID));
+		return array('Post' => $aPosts, 'User' => $aUsers);
+	}
+
+	public function getNotes($userID) {
+		$sql = $this->db->prepare('SELECT n.*, p.title AS para_title FROM '.$this->getTableName('notes').' AS n
+			JOIN '.$this->getTableName('paragraphs').' AS p ON p.id = n.para_id
+			WHERE user_id = %d
+			ORDER BY n.created',
+			$userID
+		);
+		return $this->db->get_results($sql, ARRAY_A);
 	}
 
 	public function getPath($type, $id) {
@@ -100,8 +133,12 @@ class LessonModel extends DBModel {
 		return $FName;
 	}
 
-	public function getMediaItem($media_type = '', $object_type = '', $object_id = 0, $params = '') {
-		$media = $this->findOne(array('media_type' => $media_type, 'object_type' => $object_type, 'object_id' => $object_id));
+	public function getMediaItem($media_type = '', $object_type = '', $object_id = 0) {
+		return $this->findOne(array('media_type' => $media_type, 'object_type' => $object_type, 'object_id' => $object_id));
+	}
+
+	public function getMediaItemURL($media_type = '', $object_type = '', $object_id = 0, $params = '') {
+		$media = $this->getMediaItem($media_type, $object_type, $object_id);
 		return ($media) ? $this->getMediaURL($media_type, $media['id'], $media['file'], $params) : '';
 	}
 
@@ -158,34 +195,6 @@ class LessonModel extends DBModel {
 		return array('status' => 'OK');
 	}
 
-	public function getPosts($paraID) {
-		/*
-		$sql = $this->db->prepare('SELECT p.*, u.user_nicename AS username FROM '.$this->getTableName('posts').' AS p
-			JOIN '.$this->getWPTableName('users').' AS u ON u.ID = p.user_id
-			WHERE para_id = %d
-			ORDER BY p.created',
-			$paraID
-		);
-		*/
-		$aPosts = $this->findAll(array('para_id' => $paraID), 'created');
-		$aID = array();
-		foreach($aPosts as $post) {
-			$aID[] = $post['user_id'];
-		}
-		$aUsers = $this->getUsersList(array('u.ID' => $aID));
-		return array('Post' => $aPosts, 'User' => $aUsers);
-	}
-
-	public function getNotes($userID) {
-		$sql = $this->db->prepare('SELECT n.*, p.title AS para_title FROM '.$this->getTableName('notes').' AS n
-			JOIN '.$this->getTableName('paragraphs').' AS p ON p.id = n.para_id
-			WHERE user_id = %d
-			ORDER BY n.created',
-			$userID
-		);
-		return $this->db->get_results($sql, ARRAY_A);
-	}
-
 	public function getThumbsList($conditions = array()) {
 		$aRowset = $this->findAll(array_merge(array('object_type' => 'LessonThumb'), $conditions));
 		$aThumbs = array();
@@ -193,16 +202,6 @@ class LessonModel extends DBModel {
 			$aThumbs[$row['object_id']] = $this->getMediaURL('image', $row['id'], $row['file'], '&w=90&h=90');
 		}
 		return $aThumbs;
-	}
-
-	public function getLessonInfo($lessonID) {
-		$mediaModel = new LessonModel('media');
-		return array('Lesson' => $this->getItem($lessonID), 'Thumb' => $mediaModel->getMediaItem('image', 'LessonThumb', $lessonID, '&w=150&h=150'));
-	}
-
-	public function getUsersList($conditions = array()) {
-		$apiModel = new LessonAPI();
-		return $apiModel->getUsersList($conditions);
 	}
 
 	public function getImageList($conditions = array(), $image_type = 'shop_thumbnail') {
@@ -230,4 +229,10 @@ class LessonModel extends DBModel {
 		$apiModel = new LessonAPI();
 		return $apiModel->checkUserAccess($lessonID, $userID);
 	}
+
+	public function getUsersList($conditions = array()) {
+		$apiModel = new LessonAPI();
+		return $apiModel->getUsersList($conditions);
+	}
+
 }
