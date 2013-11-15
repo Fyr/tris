@@ -233,12 +233,12 @@ function initContentHeight(){
 			if($(this).parents('.tab').find('.tab-preambula').length){
 			    $(this).css({
      				height: win.height() - footer.outerHeight(true) - 131 - $(this).parents('.tab').find('.tab-preambula').actual('height')
-    			}) 
+    			})
    			}
    			else{
     			$(this).css({
      				height: win.height() - footer.outerHeight(true) - 95
-    			})    
+    			})
    			}
 		});
 
@@ -247,17 +247,28 @@ function initContentHeight(){
 			left: '-9999'
 		});
 		clearTimeout(timer);
-	    timer = setTimeout(function(){
+		timer = setTimeout(function(){
 			if(win.width()<1003 && !$('.jqm-navmenu-link').hasClass('clicked')){
-				$('.jqm-navmenu-link').click();				
+				$('.jqm-navmenu-link').click();
 			}
 			if(win.width()>1003 && $('.jqm-navmenu-link').hasClass('clicked')){
-				$('.jqm-navmenu-link').click();				
+				$('.jqm-navmenu-link').click();
 			}
-		}, 100);
+			console.log(getWindowMode());
+		}, 50);
 	}
 
 	handleResize();
 
 	win.resize(handleResize);
+}
+
+function getWindowMode() {
+	var win = $(window);
+	if (win.width() < 480) {
+		return 'Mobile';
+	} else if (win.width() < 1003) {
+		return 'iPad';
+	}
+	return 'Desktop';
 }

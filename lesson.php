@@ -101,7 +101,6 @@ if (!$paraID) {
 		}
 	}
 }
-$paragraph = $paraModel->getItem($paraID);
 
 $aParaInfo = $paraModel->getParagraphList(array('lesson_id' => $lessonID)); // for navigation btw paragraphs (next, prev, slider)
 
@@ -128,13 +127,14 @@ $notesInfo = $lsActions->getNotesContent($paraID);
 $notesHTML = $notesInfo['html'];
 $notesCount = $notesInfo['count'];
 
-// $contentHTML = ($paragraph && $paragraph['content_cached']) ? $paragraph['content_cached'] : '';
+$contentHTML = '';
 if ($lEditMode) {
-	$contentHTML = $lsActions->renderContent($paraID, true); // get HTML-content for main text
+	$contentHTML = $lsActions->renderContent($paraID, true); // get HTML-content for main text at once
 	$aSnippetOptions = $lsActions->getSnippetOptions($paraID); // get snippet options for main text
 } else {
-	$contentHTML = ($paragraph && $paragraph['content_cached']) ? $paragraph['content_cached'] : '';
-	// $contentHTML = $lsActions->renderContent($paraID, false); // get HTML-content for main text
+	// load HTML-content by ajax via switchPara
+	// $paragraph = $paraModel->getItem($paraID);
+	// $contentHTML = ($paragraph && $paragraph['content_cached']) ? $paragraph['content_cached'] : '';
 }
 
 $audioModel = LessonModel::getModel('media');

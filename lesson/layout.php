@@ -77,9 +77,12 @@ $(document).ready(function() {
 	if (!$lEditMode) {
 ?>
 $(document).ready(function() {
+	lesson.switchPara(paraID);
+	/*
 	initQuiz();
 	initGallery();
 	initSnippetSlider();
+	*/
 });
 <?
 	}
@@ -167,12 +170,9 @@ jQuery(window).on('mercury:ready', function() {
 				<div class="subnav-fixed-frame">
 					<span class="nav-links">
 						<a href="javascript:void(0)" class="up" onclick="navigatePrev()" title="К предыдущему параграфу"></a>
-<?
-	$favorite = ($paragraph && $paragraph['favorite']) ? 'active' : '';
-?>
 						<!--a href="#" class="share"></a>
 						<a href="#" class="play"></a-->
-						<a href="javascript:void(0)" class="favorite <?=$favorite?>"></a>
+						<a href="javascript:void(0)" class="favorite"></a>
 <?
 	if (!$audio) {
 		$style = 'display: none;';
