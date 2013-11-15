@@ -85,10 +85,10 @@ class LessonModel extends DBModel {
     }
 
     public function getMediaURL($type, $id, $file, $params = '') {
-    	$page = floor($id/100);
     	if ($params) {
     		return '/thumb.php?id='.$id.'&file='.$file.$params;
     	}
+    	$page = floor($id/100);
     	return '/lesson/files/'.$type.'/'.$page.'/'.$id.'/'.rawurlencode($file);
     }
 
@@ -219,12 +219,76 @@ class LessonModel extends DBModel {
 				$file = $this->getMediaURL('image', $row['id'], $row['file']);
 				if ($type == 'shop_thumbnail') {
 					$file = $this->getMediaURL('image', $row['id'], $row['file'], '&w=90&h=90');
-					// $file = '/thumb.php?id='.$row['id'].'&file='.$row['file'].'&w=90&h=90';
+				} else if (in_array($type, array('desktop', 'ipad', 'mobile'))) {
+					$file = $this->getMediaURL('image', $row['id'], $row['file'], '&viewmode='.$type);
 				}
 				$aImages[$row['id']][$type] = $file;
 			}
 		}
 		return $aImages;
+	}
+
+	private function getMediaFileInfo($filename, $aSize = array(), $mode = '') {
+		$aFName = explode('.', $filename);
+		$_ret = array('orig_fname' => $aFName[0], 'fname' => $aFName[0], 'orig_ext' => $aFName[1]);
+		if ($aSize['w'] || $aSize['h']) {
+			$_ret['fname'] = $aSize['w'].'x'.$aSize['h'];
+		} else if ($mode) {
+			$_ret['fname'] = $mode;
+		}
+		if (isset($aFName[2]) && $aFName[2]) {
+			$_ret['ext'] = $aFName[2];
+		} else {
+			$_ret['ext'] = $aFName[1];
+		}
+		return $_ret;
+	}
+
+	public function genImage($id, $file, $aSize = array(), $mode = '', $lOutput = true) {
+		@require_once(INCLUDE_DIR.'image.php');
+
+		$path = $this->getPath('image', $id);
+		$aFName = $this->getMediaFileInfo($file, $aSize, $mode);
+		$fname = $path.$aFName['fname'].'.'.$aFName['ext'];
+		if (file_exists($fname)) {
+			// image already exists
+			if ($lOutput) {
+				header('Content-type: image/'.$aFName['ext']);
+				echo file_get_contents($fname);
+				exit;
+			} else {
+				return;
+			}
+		}
+
+		$orig_fname = $path.$aFName['orig_fname'].'.'.$aFName['orig_ext'];
+		if (!file_exists($orig_fname)) {
+			// fix original file name by media ID if it was set incorrectly
+			$media = $this->getItem($id);
+			$orig_fname = $path.$media['file'];
+		}
+
+		$image = new Image();
+		$image->load($orig_fname);
+		$aPerc = array('ipad' => 80, 'mobile' => 50);
+		if ($mode && isset($aPerc[$mode])) {
+			// decrease image due to view mode
+			$aSize['w'] = intval($image->getSizeX() * $aPerc[$mode] / 100);
+		}
+		if ($aSize['w'] || $aSize['h']) {
+			$image->resize($aSize['w'], $aSize['h']); // 'f6f6f6'
+		}
+
+		if (!in_array($aFName['ext'], array('jpg', 'png'))) {
+			$aFName['ext'] = 'gif';
+		}
+
+		$method = 'output'.ucfirst($aFName['ext']);
+		$image->$method($fname);
+		if ($lOutput) {
+			$image->$method();
+			exit;
+		}
 	}
 
 	public function checkUserAccess($lessonID, $userID) {

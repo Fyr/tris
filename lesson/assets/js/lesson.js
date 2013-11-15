@@ -330,7 +330,7 @@ var lesson = {
 		} else {
 			lesson.sendRequest('switchPara', {'id': _paraID}, function(response){
 				paraID = _paraID;
-				$('#lesson-container').html(response.content);
+				$('#lesson-container').html(fixImagesViewMode(response.content, getViewMode()));
 
 				lesson.postInit(response);
 				lesson.notesInit(response);
@@ -345,6 +345,13 @@ var lesson = {
 		}
 	},
 
+}
+
+function fixImagesViewMode(html, mode) {
+	if (mode == 'desktop') {
+		return html;
+	}
+	return html.replace(/viewmode=desktop/g, 'viewmode=' + mode);
 }
 
 function initSlider(paraID) {

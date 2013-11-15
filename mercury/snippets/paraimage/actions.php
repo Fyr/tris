@@ -6,8 +6,8 @@ class ParaimageActions extends SnippetActions {
 	public function preview() {
 		$mediaModel = new LessonModel('media');
 		$img_id = Request::POST('img_ids');
-		$img = $this->lessonModel->getImageList(array('id' => $img_id), 'large');
-		$this->set('img_src', $img[$img_id]['large']);
+		$img = $this->lessonModel->getImageList(array('id' => $img_id), 'desktop');
+		$this->set('img_src', $img[$img_id]['desktop']);
 		return parent::preview();
 	}
 }

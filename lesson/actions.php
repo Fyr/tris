@@ -205,6 +205,20 @@ class LessonActions {
 		return $content;
 	}
 
+	private function postProcessParaimage($content) {
+		preg_match_all('/thumb\.php\?id=(\d+)/', $content, $matches);
+		$aModes = array('desktop', 'ipad', 'mobile');
+		if (isset($matches[1])) {
+			foreach($matches[1] as $img_id) {
+				$media = $this->mediaModel->getItem($img_id);
+				foreach($aModes as $viewmode) {
+					$this->mediaModel->genImage($img_id, $media['file'], null, $viewmode, false);
+				}
+			}
+		}
+		return $content;
+	}
+
 	public function saveContent($_data) {
 		// Save content
 		$data = array('id' => $_GET['p'], 'content' => trim(stripslashes($_data['mercury-content']['value'])) );
@@ -232,7 +246,7 @@ class LessonActions {
 		$content_cached = trim($this->renderContent($data['id'], false));
 		$aTitles = $this->parseSubheaders($content_cached);
 		$content_cached = $this->postProcessSubheaders($content_cached);
-
+		$content_cached = $this->postProcessParaimage($content_cached);
 		$content_cached = $this->postProcessQuiz($content_cached);
 
 		$this->paraModel->save(array('id' => $data['id'], 'content_cached' => $content_cached, 'subheaders' => ($aTitles) ? serialize($aTitles) : ''));

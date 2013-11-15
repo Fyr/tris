@@ -254,7 +254,6 @@ function initContentHeight(){
 			if(win.width()>1003 && $('.jqm-navmenu-link').hasClass('clicked')){
 				$('.jqm-navmenu-link').click();
 			}
-			console.log(getWindowMode());
 		}, 50);
 	}
 
@@ -263,12 +262,12 @@ function initContentHeight(){
 	win.resize(handleResize);
 }
 
-function getWindowMode() {
+function getViewMode() {
 	var win = $(window);
 	if (win.width() < 480) {
-		return 'Mobile';
+		return 'mobile';
 	} else if (win.width() < 1003) {
-		return 'iPad';
+		return 'ipad';
 	}
-	return 'Desktop';
+	return 'desktop';
 }
