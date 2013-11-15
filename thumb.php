@@ -10,7 +10,7 @@ define('UPLOAD_DIR', './lesson/files/');
 require_once(INCLUDE_DIR.'request.php');
 require_once(INCLUDE_DIR.'db_adapter.php');
 require_once(INCLUDE_DIR.'model.php');
-require_once(API_DIR.'load_api.php');
+// require_once(API_DIR.'load_api.php');
 @require_once(INCLUDE_DIR.'image.php');
 
 $mediaModel = LessonModel::getModel('media');
@@ -19,24 +19,32 @@ $id = Request::GET('id', 0);
 $file = Request::GET('file', '');
 $aSize['w'] = Request::GET('w', '');
 $aSize['h'] = Request::GET('h', '');
+$mode = Request::GET('viewmode', '');
+
 $path = $mediaModel->getPath('image', $id);
-$aFName = getFileInfo($file);
-$fname = $path.$aSize['w'].'x'.$aSize['h'].'.'.$aFName['ext'];
-// echo $fname.'.'.$aFName['ext'].'<br/>';
+$aFName = getFileInfo($file, $aSize, $mode);
+$fname = $path.$aFName['fname'].'.'.$aFName['ext'];
 if (file_exists($fname)) {
 	header('Content-type: image/'.$aFName['ext']);
 	echo file_get_contents($fname);
 	exit;
 }
 
-$image = new Image();
-$orig_fname = $path.$aFName['fname'].'.'.$aFName['orig_ext'];
+$orig_fname = $path.$aFName['orig_fname'].'.'.$aFName['orig_ext'];
 if (!file_exists($orig_fname)) {
+	// fix original file name by media ID if it was set incorrectly
 	$media = $mediaModel->getItem($id);
 	$orig_fname = $path.$media['file'];
 }
+
+$image = new Image();
 $image->load($orig_fname);
-if ($aSize) {
+$aPerc = array('ipad' => 80, 'mobile' => 50);
+if ($mode && isset($aPerc[$mode])) {
+	// decrease image due to view mode
+	$aSize['w'] = intval($image->getSizeX() * $aPerc[$mode] / 100);
+}
+if ($aSize['w'] || $aSize['h']) {
 	$image->resize($aSize['w'], $aSize['h']); // 'f6f6f6'
 }
 if ($aFName['ext'] == 'jpg') {
@@ -52,9 +60,14 @@ if ($aFName['ext'] == 'jpg') {
 
 exit;
 
-function getFileInfo($filename) {
+function getFileInfo($filename, $aSize = array(), $mode = '') {
 	$aFName = explode('.', $filename);
-	$_ret = array('fname' => $aFName[0], 'orig_ext' => $aFName[1]);
+	$_ret = array('orig_fname' => $aFName[0], 'fname' => $aFName[0], 'orig_ext' => $aFName[1]);
+	if ($aSize['w'] || $aSize['h']) {
+		$_ret['fname'] = $aSize['w'].'x'.$aSize['h'];
+	} else if ($mode) {
+		$_ret['fname'] = $mode;
+	}
 	if (isset($aFName[2]) && $aFName[2]) {
 		$_ret['ext'] = $aFName[2];
 	} else {
