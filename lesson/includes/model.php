@@ -168,13 +168,15 @@ class LessonModel extends DBModel {
 		}
 
 		$path = $this->getPath($media['media_type'], $mediaID);
+		// Check if this image is already used for snippets
 		if ($media['media_type'] == 'image') {
-			// Check if this image is already used for snippets
-			$snippetOptsModel = new LessonModel('snippet_options');
-			$img_src = $this->getMediaURL('image', $mediaID, $media['file']);
-			$snippet = $snippetOptsModel->findOne(array('option_key' => 'img_src', 'value' => $img_src));
-			if ($snippet) {
-				return array('status' => 'ERROR', 'errMsg' => 'Это изображение уже используется для просмотра уроков');
+			if ($media['object_type'] == 'Lesson') {
+				$snippetOptsModel = new LessonModel('snippet_options');
+				$img_src = $this->getMediaURL('image', $mediaID, $media['file']);
+				$snippet = $snippetOptsModel->findOne(array('option_key' => 'img_src', 'value' => $img_src));
+				if ($snippet) {
+					return array('status' => 'ERROR', 'errMsg' => 'Это изображение уже используется для просмотра уроков');
+				}
 			}
 
 			$files = getPathContent($path);

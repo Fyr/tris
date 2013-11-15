@@ -572,10 +572,12 @@ class LessonActions {
 		if (isset($_FILES['type']) && !in_array($_FILES['type'], array('image/jpeg', 'image/jpg', 'image/png', 'image/gif'))) {
 			return array('status' => 'ERROR', 'errMsg' => 'Неверный формат файла');
 		}
-
+		$old_image = $this->mediaModel->getMediaItem('image', 'LessonThumb', $data['id']);
 		$response = $this->mediaModel->uploadMedia('media', 'image', 'LessonThumb', $data['id']);
 		if ($response['status'] == 'OK') {
+			$this->mediaModel->delMediaItem($old_image['id']);
 			$response['thumbHTML'] = $this->getThumbContent(true);
+			$response = array_merge($response, $this->lessonModel->getLessonInfo($data['id']));
 			return $response;
 		}
 

@@ -97,6 +97,9 @@ var lesson = {
 			lesson.ajaxForm('#lessonImage_' + id + ' form', 'lessonImageUpload', function(response){
 				$('#lessonImage_' + id).html('');
 				$('.thumbs-panel .tab-holder').html(response.thumbHTML);
+				if (lessonID == id) {
+					$('.content-panel .tab-preambula img.main').attr('src', response.Thumb);
+				}
 				/*
 				if (paraID == id) {
 					$('.nav-links .play').show();
