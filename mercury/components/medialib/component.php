@@ -2,13 +2,13 @@
 class MediaLibComponent extends SnippetComponent {
 
 	public function selectThumbOptions($lMultiSelect = false) {
-		$this->set('images', $this->lessonModel->getImageList(array(), array('shop_thumbnail', 'large')));
+		$this->set('images', $this->lessonModel->getImageList(array('object_type' => 'Lesson'), array('shop_thumbnail', 'large')));
 		$this->set('lMultiSelect', $lMultiSelect);
 		return $this->render('select_thumb_options');
 	}
 
 	public function getThumbsContent() {
-		$this->set('images', $this->lessonModel->getImageList(array(), array('shop_thumbnail', 'large')));
+		$this->set('images', $this->lessonModel->getImageList(array('object_type' => 'Lesson'), array('shop_thumbnail', 'large')));
 		return $this->render('view_thumbs');
 	}
 
