@@ -12,8 +12,8 @@
 					<div align="right">
 						<button type="button" class="btn btn-primary btn-mini upload-btn disabled" disabled="disabled" onclick="Mercury.Snippet.API.uploadImage(this, '#upload-image')">Загрузить</button>
 					</div>
-					</div>
-					<div class="loader" style="display: none; padding-top: 20px;" align="center">
+				</div>
+				<div class="loader" style="display: none; padding-top: 20px;" align="center">
 					<img src="/mercury/assets/img/ajax-loader3.gif" alt="Подождите, идет загрузка..."/> Подождите, идет загрузка...
 				</div>
 			</div>

@@ -20,16 +20,27 @@ require_once(API_DIR.'load_api.php');
 
 require_once(BASE_DIR.'actions.php');
 
-$snipOptsModel = LessonModel::getModel('snippet_options');
-
-$aRowset = $snipOptsModel->findAll(array('option_key' => 'img_src'));
+$mediaModel = LessonModel::getModel('media');
+$aRowset = $mediaModel->findAll();
 foreach($aRowset as $row) {
-	$a = explode('/', $row['value']);
-	$img_ids = $a[5];
-	echo "{$img_ids}<br>";
-	$snipOptsModel->save(array('id' => $row['id'], 'option_key' => 'img_ids', 'value' => $img_ids));
+	$image = $row['file'];
+	if ($row['media_type'] === 'image') {
+		$size = $mediaModel->getImageSize($row['id'], $row['file']);
+		// $size['fsize'] = $mediaModel->getMediaFile
+		$extras = array('size' => array('original' => $size, 'desktop' => $size));
+		$data = array('id' => $row['id'], 'extras' => serialize($extras));
+		// fdebug($data);
+		$mediaModel->save($data);
+	}
+	
 }
+
 echo 'Done';
+
+function processContent($html) {
+	return preg_replace('/src="\/lesson\/files\/image\/(\d+)\/(\d+)\/image([_a-z0-9]+)\.([a-zA-Z]+)"/', 'src="/thumb.php?id=$2&file=image$3.$4&viewmode=desktop"', $html);
+}
+
 
 function fdebug($data, $logFile = 'tmp.log', $lAppend = true) {
 	file_put_contents($logFile, mb_convert_encoding(print_r($data, true), 'cp1251', 'utf8'), ($lAppend) ? FILE_APPEND : null);

@@ -502,7 +502,20 @@
 	font-size: 10px;
 	letter-spacing: -1px;
 }
+.small b, b.small {
+	font-size: 10px;
+	letter-spacing: normal;
+}
 .loader img {
 	position: relative;
 	top: 3px;
+}
+.show-size {
+	margin-left: 20px;
+}
+.image-info, .img-settings-changed {
+	display: none;
+}
+.img-settings-changed {
+	text-align: center;
 }

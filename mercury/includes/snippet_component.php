@@ -2,7 +2,7 @@
 class SnippetComponent {
 
 	protected $View;
-	protected $paraID, $snippetInfo;
+	protected $paraID, $snippetInfo, $lessonModel;
 	protected $uses = array();
 	protected $components = array();
 

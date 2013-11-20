@@ -96,6 +96,16 @@ class LessonModel extends DBModel {
     	return $this->getPath($type, $id).$file;
     }
 
+    public function getImageSize($id, $file) {
+    	@require_once(INCLUDE_DIR.'image.php');
+
+    	$path = $this->getPath('image', $id);
+		$image = new Image();
+		$image->load($path.$file);
+		$res = array('w' => $image->getSizeX(), 'h' => $image->getSizeY());
+		return $res;
+    }
+
     public function uploadMedia($inputName, $mediaType, $objectType = 'Lesson', $objectID) {
 		$id = $this->save(array('media_type' => $mediaType, 'object_type' =>$objectType, 'object_id' => $objectID, 'file' => ''));
 		$path = $this->getPath($mediaType, $id);
@@ -107,7 +117,12 @@ class LessonModel extends DBModel {
 		}
 
 		if ($fileName = $this->uploadFile($inputName, $path, $mediaType)) {
-			$this->save(array('id' => $id, 'file' => $fileName));
+			$data = array('id' => $id, 'file' => $fileName);
+			if ($mediaType === 'image') {
+				$size = $this->getImageSize($id, $fileName);
+				$data['extras'] = serialize(array('size' => array('original' => $size, 'desktop' => $size)));
+			}
+			$this->save($data);
 			return array('status' => 'OK', 'file' => $this->getMediaURL($mediaType, $id, $fileName));
 		} else {
 			$this->delete($id); // delete record for non-uploaded file
@@ -215,6 +230,8 @@ class LessonModel extends DBModel {
 		$aRowset = $mediaModel->findAll($conditions, 'id DESC');
 		$aImages = array();
 		foreach($aRowset as $row) {
+			$aImages[$row['id']] = $row;
+			$aImages[$row['id']]['extras'] = unserialize($row['extras']);
 			foreach($image_type as $type) {
 				$file = $this->getMediaURL('image', $row['id'], $row['file']);
 				if ($type == 'shop_thumbnail') {
@@ -224,17 +241,18 @@ class LessonModel extends DBModel {
 				}
 				$aImages[$row['id']][$type] = $file;
 			}
+			// $aImages[$row['id']] = array_merge($aImages[$row['id']], $row);
 		}
 		return $aImages;
 	}
 
-	private function getMediaFileInfo($filename, $aSize = array(), $mode = '') {
+	public function getMediaFileInfo($filename, $aSize = array(), $mode = '') {
 		$aFName = explode('.', $filename);
 		$_ret = array('orig_fname' => $aFName[0], 'fname' => $aFName[0], 'orig_ext' => $aFName[1]);
-		if ($aSize['w'] || $aSize['h']) {
-			$_ret['fname'] = $aSize['w'].'x'.$aSize['h'];
-		} else if ($mode) {
+		if ($mode) {
 			$_ret['fname'] = $mode;
+		} else if ($aSize['w'] || $aSize['h']) {
+			$_ret['fname'] = $aSize['w'].'x'.$aSize['h'];
 		}
 		if (isset($aFName[2]) && $aFName[2]) {
 			$_ret['ext'] = $aFName[2];
@@ -262,18 +280,29 @@ class LessonModel extends DBModel {
 		}
 
 		$orig_fname = $path.$aFName['orig_fname'].'.'.$aFName['orig_ext'];
+		if ($mode && $mode !== 'desktop') {
+			// For desktop mode original image will be desktop version of image
+			$orig_fname = $path.'desktop'.'.'.$aFName['orig_ext'];
+		}
 		if (!file_exists($orig_fname)) {
 			// fix original file name by media ID if it was set incorrectly
 			$media = $this->getItem($id);
 			$orig_fname = $path.$media['file'];
+			if ($mode && $mode !== 'desktop') {
+				list($name, $ext) = explode('.', $media['file']);
+				$orig_fname = $path.'desktop.'.$ext;
+			}
 		}
 
 		$image = new Image();
-		$image->load($orig_fname);
+		$image->load($orig_fname); // load original or desktop
 		$aPerc = array('ipad' => 80, 'mobile' => 50);
-		if ($mode && isset($aPerc[$mode])) {
-			// decrease image due to view mode
-			$aSize['w'] = intval($image->getSizeX() * $aPerc[$mode] / 100);
+		if ($mode) {
+			if ($mode !== 'desktop' && isset($aPerc[$mode])) {
+				// decrease image due to view mode
+				$aSize['w'] = intval($image->getSizeX() * $aPerc[$mode] / 100);
+				$aSize['h'] = null;
+			}
 		}
 		if ($aSize['w'] || $aSize['h']) {
 			$image->resize($aSize['w'], $aSize['h']); // 'f6f6f6'

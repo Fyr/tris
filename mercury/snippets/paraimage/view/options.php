@@ -67,7 +67,9 @@
     </fieldset>
 
 	<?=$this->MediaLib->render('upload_image')?>
+	<?=$this->MediaLib->render('image_settings')?>
 	<?=$this->MediaLib->selectThumbOptions()?>
+
 
   </div>
   <div class="form-actions mercury-display-controls">

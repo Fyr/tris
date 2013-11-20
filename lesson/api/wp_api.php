@@ -16,7 +16,8 @@ class LessonAPI extends AdapterAPI {
 		$sql = 'SELECT * FROM '.$this->getWPTableName('comments').
 			$this->getSQLWhere(array('user_id' => $userID, 'comment_type' => 'sensei_course_start'));
 		$row = $this->db->get_row($sql, ARRAY_A);
-		return ($row && isset($row['comment_post_ID']) && $row['comment_post_ID']) ? $row['comment_post_ID'] : false;
+		// return ($row && isset($row['comment_post_ID']) && $row['comment_post_ID']) ? $row['comment_post_ID'] : false;
+		return true;
 	}
 }
 
